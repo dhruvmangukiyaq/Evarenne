@@ -1,13 +1,21 @@
 import express from "express";
+import { catalogRouter } from "./routes/catalog.routes.js";
+import { pricingRouter } from "./routes/pricing.routes.js";
 
 export function createApp() {
   const app = express();
 
-  app.use(express.json());
+  app.use(express.json({ limit: "100kb" }));
+
+  // Security headers for API responses
+  app.disable("x-powered-by");
 
   app.get("/api/health", (_req, res) => {
     res.json({ status: "ok", service: "evarenne-api" });
   });
+
+  app.use("/api", catalogRouter);
+  app.use("/api/pricing", pricingRouter);
 
   // Unknown API route -> JSON 404 (never HTML)
   app.use("/api", (_req, res) => {
