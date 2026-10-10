@@ -1,0 +1,17 @@
+# macOS
+.DS_Store
+
+# Node
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Env — never commit real values
+.env
+.env.*
+!.env.example
+
+# Logs / editor
+*.log
+.vscode/
+.idea/

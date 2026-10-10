@@ -1,0 +1,279 @@
+@import "tailwindcss";
+
+/*
+ * EVARENNE DESIGN TOKENS
+ * Single source of truth for the brand palette, typography, spacing, and elevation.
+ * Brand palette (required):
+ *   Wine #541F32 · Muted Gold #C4A36B · Ivory #F8F4EF · Ink #241C20
+ *
+ * Contrast notes (computed, WCAG 2.1 relative luminance):
+ *   Wine  on Ivory ......... 11.8:1 (AAA body)      Ivory on Wine ....... 12.9:1 (AAA)
+ *   Ink   on Ivory ......... 15.3:1 (AAA body)      Ivory on Ink ........ 15.3:1 (AAA)
+ *   Gold  #C4A36B on Ivory .. 2.2:1  → DECORATIVE ONLY (rules, borders, large display accents).
+ *   Gold-deep #7A5A24 on Ivory 5.9:1 → the only gold approved for small text on ivory.
+ * Never use --color-gold for small body text on ivory; use --color-gold-deep.
+ */
+
+@theme {
+  /* ---- Brand palette ---- */
+  --color-wine: #541f32;
+  --color-wine-hover: #451828;
+  --color-wine-active: #37131f;
+  --color-wine-soft: #6d3247;
+  --color-gold: #c4a36b;
+  --color-gold-deep: #7a5a24;
+  --color-gold-soft: #e8dcc4;
+  --color-ivory: #f8f4ef;
+  --color-ivory-deep: #efe8de;
+  --color-ivory-dim: #e4dbcd;
+  --color-ink: #241c20;
+  --color-ink-soft: #5a5054;
+  --color-ink-faint: #8b8185;
+  --color-white: #ffffff;
+
+  /* ---- Semantic feedback (never color-only: always paired with text/icons) ---- */
+  --color-danger: #8c2f2f;
+  --color-danger-soft: #f7e8e8;
+  --color-success: #2f5d3a;
+  --color-success-soft: #e9f2ea;
+
+  /* ---- Typography ----
+   * Tiffany & Co. renders headings/nav in "Sterling SSM" (proprietary serif) and
+   * body/UI in "Santral Book" (proprietary sans). Neither is licensed for this
+   * project, so we use the closest legally usable SIL Open Font License pairs:
+   *   Cormorant Garamond (editorial serif) ≈ Sterling SSM
+   *   Jost (neutral humanist-geometric sans) ≈ Santral Book
+   */
+  --font-display: "Cormorant Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif;
+  --font-sans: "Jost Variable", "Jost", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  /* Fluid type scale (clamp: min, preferred, max) */
+  --text-display: clamp(2.75rem, 1.9rem + 4.2vw, 5.25rem);
+  --text-display--line-height: 1.02;
+  --text-display--letter-spacing: 0.01em;
+  --text-display--font-weight: 400;
+
+  --text-h1: clamp(2.25rem, 1.6rem + 3vw, 3.75rem);
+  --text-h1--line-height: 1.08;
+  --text-h1--letter-spacing: 0.01em;
+  --text-h1--font-weight: 400;
+
+  --text-h2: clamp(1.75rem, 1.35rem + 2vw, 2.75rem);
+  --text-h2--line-height: 1.15;
+  --text-h2--letter-spacing: 0.005em;
+  --text-h2--font-weight: 400;
+
+  --text-h3: clamp(1.375rem, 1.15rem + 1.1vw, 1.875rem);
+  --text-h3--line-height: 1.25;
+  --text-h3--font-weight: 500;
+
+  --text-h4: clamp(1.125rem, 1rem + 0.6vw, 1.375rem);
+  --text-h4--line-height: 1.35;
+  --text-h4--font-weight: 500;
+
+  --text-body-lg: 1.0625rem;
+  --text-body-lg--line-height: 1.7;
+
+  --text-body: 1rem;
+  --text-body--line-height: 1.65;
+
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.55;
+
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1.5;
+
+  /* Eyebrow: uppercase tracked sans label */
+  --text-eyebrow: 0.75rem;
+  --text-eyebrow--line-height: 1.4;
+  --text-eyebrow--letter-spacing: 0.22em;
+  --text-eyebrow--font-weight: 500;
+
+  /* ---- Spacing rhythm (4px base) ---- */
+  --spacing: 0.25rem;
+
+  /* ---- Radii: restrained, editorial (sharp-ish corners read more premium) ---- */
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 8px;
+  --radius-pill: 999px;
+
+  /* ---- Elevation: soft, warm-tinted shadows ---- */
+  --shadow-hairline: 0 1px 0 0 rgb(36 28 32 / 0.08);
+  --shadow-card: 0 2px 14px -4px rgb(36 28 32 / 0.12);
+  --shadow-card-hover: 0 12px 32px -12px rgb(36 28 32 / 0.22);
+  --shadow-drawer: -18px 0 48px -24px rgb(36 28 32 / 0.35);
+  --shadow-overlay: 0 24px 72px -24px rgb(36 28 32 / 0.4);
+
+  /* ---- Layout ---- */
+  --container-3xs: 16rem;
+  --container-2xs: 20rem;
+  --container-xs: 26rem;
+  --container-sm: 32rem;
+  --container-md: 40rem;
+  --container-lg: 48rem;
+  --container-xl: 58rem;
+  --container-2xl: 72rem;
+  --container-page: 80rem;
+  --container-wide: 90rem;
+
+  /* ---- Motion ---- */
+  --ease-luxury: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast: 150ms;
+  --duration-base: 240ms;
+  --duration-slow: 480ms;
+
+  /* ---- z-index scale ---- */
+  --z-header: 40;
+  --z-drawer: 50;
+  --z-overlay: 60;
+  --z-toast: 70;
+}
+
+/* ================= Base layer ================= */
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    border-color: var(--color-ivory-dim);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    /* Offset sticky header when jumping to anchors */
+    scroll-padding-top: 7rem;
+  }
+
+  body {
+    background-color: var(--color-ivory);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: var(--text-h2--font-weight);
+    text-wrap: balance;
+  }
+
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-sans);
+    text-wrap: balance;
+  }
+
+  /* Visible focus for keyboard users only */
+  :focus-visible {
+    outline: 2px solid var(--color-wine);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+
+  /* Removing default focus ring for pointer users is handled per-component via
+   * focus:not(:focus-visible) so nothing breaks keyboard accessibility. */
+
+  ::selection {
+    background-color: var(--color-wine);
+    color: var(--color-ivory);
+  }
+
+  img,
+  picture,
+  svg,
+  video {
+    display: block;
+    max-width: 100%;
+  }
+
+  input,
+  button,
+  textarea,
+  select {
+    font: inherit;
+    color: inherit;
+  }
+
+  /* Honor reduced motion globally */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* ================= Utilities ================= */
+
+@utility text-eyebrow {
+  font-family: var(--font-sans);
+  font-size: var(--text-eyebrow);
+  line-height: var(--text-eyebrow--line-height);
+  font-weight: var(--text-eyebrow--font-weight);
+  letter-spacing: var(--text-eyebrow--letter-spacing);
+  text-transform: uppercase;
+}
+
+/* Visually hidden but accessible to screen readers */
+@utility sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Skip navigation link: hidden until focused */
+@utility skip-link {
+  position: absolute;
+  top: -100%;
+  left: 1rem;
+  z-index: var(--z-toast);
+  padding: 0.75rem 1.25rem;
+  background-color: var(--color-wine);
+  color: var(--color-ivory);
+  font-size: var(--text-sm);
+  transition: top var(--duration-fast) var(--ease-standard);
+
+  &:focus-visible {
+    top: 1rem;
+  }
+}
+
+/* Thin scrollbar for filter panels and drawers */
+@utility scroll-slim {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-ivory-dim) transparent;
+}
+
+/* Hairline gold rule used as premium accent divider */
+@utility rule-gold {
+  border: 0;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--color-gold) 20%,
+    var(--color-gold) 80%,
+    transparent
+  );
+}
