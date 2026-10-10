@@ -4,6 +4,7 @@ import { api } from "../lib/api";
 import { useApi } from "../lib/useApi";
 import type { CatalogResponse, DiamondShape, Metal, RingStyle } from "../lib/api-types";
 import { ProductCard } from "../components/catalog/ProductCard";
+import { DiamondArt } from "../components/catalog/ProductArt";
 import { metalLabel, styleLabel } from "../lib/labels";
 import { shapeLabel } from "../lib/labels";
 import { Breadcrumbs, EmptyState, ErrorState, Skeleton } from "../components/ui/Display";
@@ -79,11 +80,14 @@ function FilterCheck({
   count,
   checked,
   onToggle,
+  icon,
 }: {
   label: string;
   count?: number;
   checked: boolean;
   onToggle: () => void;
+  /** Optional leading icon (shape filters render their cut glyph). */
+  icon?: React.ReactNode;
 }) {
   return (
     <label className="flex cursor-pointer items-center gap-2.5 text-sm text-ink">
@@ -93,6 +97,7 @@ function FilterCheck({
         onChange={onToggle}
         className="h-4 w-4 accent-wine"
       />
+      {icon}
       <span className="flex-1">{label}</span>
       {count !== undefined && <span className="text-xs text-ink-faint tabular-nums">{count}</span>}
     </label>
@@ -261,6 +266,14 @@ export function CatalogPage() {
                   count={bucket?.count ?? 0}
                   checked={shapes.includes(shape)}
                   onToggle={() => toggleMulti("shapes", shape)}
+                  icon={
+                    <DiamondArt
+                      shape={shape}
+                      framed={false}
+                      className="h-5 w-5 shrink-0"
+                      title=""
+                    />
+                  }
                 />
               );
             })}

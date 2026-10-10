@@ -99,7 +99,9 @@ export function ProductDetailPage() {
             <ProductArt product={product} className="aspect-square w-full" />
           </div>
           <p className="mt-2 text-center text-xs text-ink-faint">
-            Illustrative artwork shown. Product photography is added once supplied.
+            {product.shape
+              ? "Sample image of this cut. Not a photograph of this specific stone — individual photography is added once supplied."
+              : "Illustrative artwork shown. Product photography is added once supplied."}
           </p>
         </div>
 

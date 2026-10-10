@@ -3,7 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { useApi } from "../lib/useApi";
 import type { CatalogResponse, DiamondShape } from "../lib/api-types";
-import { DiamondArt } from "../components/catalog/ProductArt";
+import { DiamondArt, ShapePhoto } from "../components/catalog/ProductArt";
 import { shapeLabel } from "../lib/labels";
 import { metalLabel, styleLabel } from "../lib/labels";
 import { Badge, ErrorState, PriceDisplay, Skeleton } from "../components/ui/Display";
@@ -365,7 +365,11 @@ export function RingBuilderPage() {
                             : "border-ivory-dim opacity-55"
                       }`}
                     >
-                      <DiamondArt shape={diamond.shape ?? "round"} className="aspect-square w-full" />
+                      <ShapePhoto
+                        shape={diamond.shape ?? "round"}
+                        alt={`${diamond.name} — sample image of the ${shapeLabel(diamond.shape ?? "round")} cut`}
+                        className="aspect-square w-full border border-ivory-dim/60 bg-white"
+                      />
                       <div className="mt-2 flex items-center justify-between gap-2">
                         <span className="text-sm font-medium text-ink">
                           {diamond.specs ? `${diamond.specs.carat.toFixed(2)} ct` : diamond.name}

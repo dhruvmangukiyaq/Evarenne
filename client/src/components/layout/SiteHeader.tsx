@@ -6,6 +6,7 @@ import { SearchOverlay } from "./SearchOverlay";
 import { CartDrawer } from "./CartDrawer";
 import { useEscapeKey, useClickOutside } from "../../lib/a11y";
 import { Button } from "../ui/Button";
+import { DiamondArt } from "../catalog/ProductArt";
 
 /** Brand wordmark — original type treatment, not any existing brand's mark. */
 function Wordmark({ className = "" }: { className?: string }) {
@@ -63,6 +64,7 @@ function WishlistLink() {
 
 export function SiteHeader() {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const openMenuItem = openMenu ? navItems.find((item) => item.label === openMenu) : undefined;
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
@@ -152,10 +154,17 @@ export function SiteHeader() {
         </div>
 
         {/* Desktop nav row */}
-        <nav aria-label="Primary" className="hidden border-t border-ivory-dim lg:block">
+        <nav
+          aria-label="Primary"
+          className="relative hidden border-t border-ivory-dim lg:block"
+          onMouseLeave={() => setOpenMenu(null)}
+        >
           <ul className="mx-auto flex max-w-(--container-page) items-center justify-center gap-1 px-8">
             {navItems.map((item) => (
-              <li key={item.label} className="relative" onMouseEnter={() => setOpenMenu(item.menu ? item.label : null)}>
+              <li
+                key={item.label}
+                onMouseEnter={() => setOpenMenu(item.menu ? item.label : null)}
+              >
                 <NavLink
                   to={item.to}
                   onFocus={() => setOpenMenu(item.menu ? item.label : null)}
@@ -172,36 +181,43 @@ export function SiteHeader() {
                     </span>
                   )}
                 </NavLink>
-
-                {item.menu && openMenu === item.label && (
-                  <div
-                    className="absolute top-full left-0 right-0 border border-t-0 border-ivory-dim bg-ivory shadow-card-hover"
-                    onMouseLeave={() => setOpenMenu(null)}
-                  >
-                    <div className="mx-auto grid max-w-(--container-page) grid-cols-3 gap-8 px-8 py-7">
-                      {item.menu.map((group) => (
-                        <div key={group.label}>
-                          <p className="mb-3 text-eyebrow text-gold-deep">{group.label}</p>
-                          <ul className="flex flex-col gap-2">
-                            {group.links.map((link) => (
-                              <li key={link.to}>
-                                <Link
-                                  to={link.to}
-                                  className="text-sm text-ink underline-offset-4 transition-colors hover:text-wine hover:underline"
-                                >
-                                  {link.label}
-                                </Link>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </li>
             ))}
           </ul>
+
+          {/* Panel is anchored to the nav (not the trigger) so it spans the full
+              width and the shape grid never collapses into the trigger's width. */}
+          {openMenuItem?.menu && (
+            <div className="absolute top-full left-0 right-0 border border-t-0 border-ivory-dim bg-ivory shadow-card-hover">
+              <div className="mx-auto max-w-(--container-page) px-8 py-7">
+                {openMenuItem.menu.map((group) => (
+                  <div key={group.label}>
+                    <p className="mb-4 text-eyebrow text-gold-deep">{group.label}</p>
+                    <ul className="grid grid-cols-2 gap-x-6 gap-y-1 sm:grid-cols-3 lg:grid-cols-5">
+                      {group.links.map((link) => (
+                        <li key={link.to}>
+                          <Link
+                            to={link.to}
+                            className="group flex items-center gap-3 py-2 text-sm text-ink underline-offset-4 transition-colors hover:text-wine"
+                          >
+                            {link.shape && (
+                              <DiamondArt
+                                shape={link.shape}
+                                framed={false}
+                                className="h-8 w-8 shrink-0"
+                                title=""
+                              />
+                            )}
+                            <span className="group-hover:underline">{link.label}</span>
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </nav>
       </header>
 

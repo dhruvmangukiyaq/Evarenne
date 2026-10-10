@@ -9,22 +9,6 @@ import type { DiamondShape, Product } from "../lib/api-types";
 
 const HOME_SHAPES: DiamondShape[] = ["round", "oval", "emerald", "princess", "cushion", "pear"];
 
-const STYLES = [
-  { slug: "solitaire", name: "Solitaire", blurb: "One stone, nothing to compete with it." },
-  { slug: "halo", name: "Halo", blurb: "A ring of light around the centre." },
-  { slug: "pav%C3%A9", name: "Pavé", blurb: "A band dusted with stones." },
-  { slug: "three-stone", name: "Three-Stone", blurb: "Past, present, and future." },
-  { slug: "hidden-halo", name: "Hidden Halo", blurb: "Sparkle from above, secret from the side." },
-  { slug: "vintage", name: "Vintage", blurb: "Milgrain and engraved detail." },
-];
-
-const METALS = [
-  { slug: "platinum", name: "Platinum", tone: "#d8d8d6" },
-  { slug: "18k-white-gold", name: "White Gold", tone: "#e8e4dc" },
-  { slug: "18k-yellow-gold", name: "Yellow Gold", tone: "#C4A36B" },
-  { slug: "18k-rose-gold", name: "Rose Gold", tone: "#d8a48f" },
-];
-
 function FeaturedProducts() {
   const { data, loading, error } = useApi<{ featured: Product[] }>((signal) => {
     void signal;
@@ -52,10 +36,10 @@ function FeaturedProducts() {
           Featured pieces appear here once the catalog marks items as featured.
         </p>
         <Link
-          to="/engagement-rings"
+          to="/diamonds/natural"
           className="mt-4 inline-flex h-11 items-center border border-wine px-6 font-sans text-sm font-medium text-wine transition-colors hover:bg-wine hover:text-ivory"
         >
-          Browse the collection
+          Browse diamonds
         </Link>
       </div>
     );
@@ -136,66 +120,13 @@ export function HomePage() {
                 to={`/diamonds/natural?shapes=${shape}`}
                 className="group flex flex-col items-center gap-2 border border-transparent p-3 transition-colors hover:border-ivory-dim"
               >
-                <DiamondArt shape={shape} className="w-full transition-transform duration-300 ease-luxury group-hover:scale-105" />
+                <DiamondArt
+                  shape={shape}
+                  framed={false}
+                  className="h-20 w-full transition-transform duration-300 ease-luxury group-hover:scale-105"
+                />
                 <span className="font-sans text-xs tracking-wide text-ink group-hover:text-wine">
                   {shapeLabel(shape)}
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      {/* ---- Shop by style ---- */}
-      <section aria-labelledby="shop-style" className="bg-ivory-deep py-16">
-        <div className="mx-auto max-w-(--container-page) px-4 lg:px-8">
-          <div className="mb-8 text-center">
-            <p className="text-eyebrow text-gold-deep">Designed around you</p>
-            <h2 id="shop-style" className="mt-2 font-display text-h2 text-ink">
-              Shop by Style
-            </h2>
-          </div>
-          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {STYLES.map((style) => (
-              <li key={style.slug}>
-                <Link
-                  to={`/engagement-rings?styles=${style.slug}`}
-                  className="block border border-ivory-dim bg-ivory p-6 transition-shadow hover:shadow-card-hover"
-                >
-                  <h3 className="font-display text-h3 text-ink">{style.name}</h3>
-                  <p className="mt-1.5 text-sm text-ink-soft">{style.blurb}</p>
-                  <span className="mt-4 inline-block font-sans text-xs font-medium tracking-[0.14em] text-wine uppercase">
-                    Explore →
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-
-      {/* ---- Shop by metal ---- */}
-      <section aria-labelledby="shop-metal" className="mx-auto max-w-(--container-page) px-4 py-16 lg:px-8">
-        <div className="mb-8 text-center">
-          <p className="text-eyebrow text-gold-deep">The setting matters</p>
-          <h2 id="shop-metal" className="mt-2 font-display text-h2 text-ink">
-            Shop by Metal
-          </h2>
-        </div>
-        <ul className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          {METALS.map((metal) => (
-            <li key={metal.slug}>
-              <Link
-                to={`/engagement-rings?metals=${encodeURIComponent(metal.slug)}`}
-                className="group flex items-center gap-4 border border-ivory-dim p-5 transition-shadow hover:shadow-card"
-              >
-                <span
-                  aria-hidden="true"
-                  className="h-10 w-10 shrink-0 rounded-full border border-ivory-dim"
-                  style={{ backgroundColor: metal.tone }}
-                />
-                <span className="font-sans text-sm font-medium text-ink group-hover:text-wine">
-                  {metal.name}
                 </span>
               </Link>
             </li>
@@ -228,14 +159,6 @@ export function HomePage() {
                 less per carat.
               </p>
             </div>
-          </div>
-          <div className="mt-8 text-center">
-            <Link
-              to="/diamond-guide/natural-vs-lab-grown"
-              className="inline-flex h-11 items-center border border-ivory px-6 font-sans text-sm font-medium text-ivory transition-colors hover:bg-ivory hover:text-wine"
-            >
-              Read the full guide
-            </Link>
           </div>
         </div>
       </section>
@@ -277,14 +200,6 @@ export function HomePage() {
               </li>
             ))}
           </ul>
-          <div className="mt-8 text-center">
-            <Link
-              to="/diamond-guide/4cs"
-              className="inline-flex h-11 items-center border border-wine px-6 font-sans text-sm font-medium text-wine transition-colors hover:bg-wine hover:text-ivory"
-            >
-              Learn the 4Cs in depth
-            </Link>
-          </div>
         </div>
       </section>
 
@@ -304,12 +219,6 @@ export function HomePage() {
             className="inline-flex h-[3.25rem] items-center bg-wine px-8 font-sans text-base font-medium text-ivory transition-colors hover:bg-wine-hover"
           >
             Book an Appointment
-          </Link>
-          <Link
-            to="/diamond-guide"
-            className="inline-flex h-[3.25rem] items-center border border-wine px-8 font-sans text-base font-medium text-wine transition-colors hover:bg-wine hover:text-ivory"
-          >
-            Visit the Diamond Guide
           </Link>
         </div>
       </section>
