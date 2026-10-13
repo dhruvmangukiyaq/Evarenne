@@ -8,15 +8,15 @@ import { Button } from "../ui/Button";
 import { DiamondArt } from "../catalog/ProductArt";
 
 /**
- * Brand wordmark, rebuilt to match the supplied logo lockup: serif capitals with
- * the closing full stop set apart. Two variants — one per ground, using both
- * supplied logo files:
- *  - on-light: charcoal capitals on an olive plate (the primary lockup) — for
- *    ivory surfaces such as the mobile drawer and the footer.
- *  - on-dark:  ivory capitals with a champagne full stop (your white logo
- *    variant) — for the olive header. Charcoal on olive is only 2.6:1, so the
- *    dark ground needs the light lockup to stay legible.
- * Type treatment only — no raster asset, so it stays sharp at any size.
+ * Brand wordmark: serif capitals with the closing full stop set apart. Two
+ * colour variants — one per ground:
+ *  - on-light: charcoal capitals with an olive full stop — for ivory surfaces
+ *    such as the mobile drawer and the footer.
+ *  - on-dark:  ivory capitals with a champagne full stop — for the olive
+ *    header. Charcoal on olive is only 2.6:1, so the dark ground needs the
+ *    light lockup to stay legible.
+ * Plain type only (no plate behind it, no raster asset), so it stays sharp at
+ * any size.
  */
 function Wordmark({
   className = "",
@@ -36,16 +36,12 @@ function Wordmark({
       className={`group inline-flex items-baseline leading-none ${className}`}
       aria-label="Evarenne & Co. — home"
     >
-      <span className="relative inline-block px-2.5">
-        {/* Olive plate sits behind the type and is inset so the capitals
-            overhang it top and bottom, as in the logo. Only rendered on light
-            grounds, where it can actually be seen. */}
+      <span className="inline-block px-2.5">
+        {/* Clean type lockup — no plate behind the capitals, so it reads as
+            plain text on whichever ground it sits (ivory drawer/footer or the
+            olive header). */}
         <span
-          aria-hidden="true"
-          className={`absolute inset-x-0 top-[9%] bottom-[9%] ${onLight ? "bg-olive" : "bg-transparent"}`}
-        />
-        <span
-          className={`relative font-display ${type} font-semibold uppercase tracking-[0.015em] ${
+          className={`font-display ${type} font-semibold uppercase tracking-[0.015em] ${
             onLight ? "text-charcoal" : "text-ivory"
           }`}
         >
