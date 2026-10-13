@@ -88,13 +88,6 @@ export function SiteHeader() {
 
   return (
     <>
-      {/* Announcement bar: the champagne ribbon — charcoal on champagne is 6.9:1 */}
-      <div className="bg-champagne px-4 py-2 text-center">
-        <p className="font-sans text-xs tracking-[0.14em] text-charcoal uppercase">
-          Reference catalog — sample data, for viewing only
-        </p>
-      </div>
-
       <header
         ref={headerRef}
         className="sticky top-0 z-(--z-header) border-b border-ivory/25 bg-olive/95 backdrop-blur"

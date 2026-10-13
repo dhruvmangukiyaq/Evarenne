@@ -83,12 +83,12 @@ export function HomePage() {
             </Reveal>
 
             <Reveal delay={400}>
-              <div className="mt-8 flex flex-wrap gap-3">
+              <div className="mt-8 flex flex-col items-start gap-3">
                 <Link
                   to="/diamonds"
                   className="inline-flex h-[3.25rem] items-center bg-olive px-8 font-sans text-base font-medium text-ivory hover:bg-olive-hover anim-shrink"
                 >
-                  Browse Lab-Grown Diamonds
+                  Lab-Grown Diamonds
                 </Link>
                 <a
                   href={whatsappInquiryUrl()}
