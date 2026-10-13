@@ -28,7 +28,6 @@ function Wordmark({
   variant?: "on-light" | "on-dark";
 }) {
   const type = size === "lg" ? "text-[1.9rem]" : "text-[1.35rem]";
-  const dot = size === "lg" ? "text-[1.15rem]" : "text-[0.8rem]";
   const onLight = variant === "on-light";
   return (
     <Link
@@ -47,9 +46,6 @@ function Wordmark({
         >
           Evarenne &amp; Co
         </span>
-      </span>
-      <span aria-hidden="true" className={`${dot} font-display ${onLight ? "text-olive" : "text-champagne"}`}>
-        .
       </span>
     </Link>
   );
@@ -165,11 +161,6 @@ export function SiteHeader() {
                   }
                 >
                   {item.label}
-                  {item.menu && (
-                    <span aria-hidden="true" className="ml-1.5 text-[0.6em] text-champagne">
-                      ▾
-                    </span>
-                  )}
                 </NavLink>
               </li>
             ))}

@@ -28,7 +28,7 @@ export function ProductCard({ product }: { product: Product }) {
         </div>
       </Link>
 
-      <div className="flex flex-1 flex-col gap-2 p-4">
+      <div className="flex flex-1 flex-col gap-2 p-3 sm:p-4">
         <div className="flex flex-wrap gap-1.5">
           {product.diamondType && (
             <Badge tone={product.diamondType === "natural" ? "olive" : "champagne"}>
@@ -39,7 +39,7 @@ export function ProductCard({ product }: { product: Product }) {
 
         <Link
           to={`/products/${product.slug}`}
-          className="font-display text-lg leading-snug text-charcoal underline-offset-4 hover:text-olive hover:underline"
+          className="font-display text-base leading-snug text-charcoal underline-offset-4 hover:text-olive hover:underline sm:text-lg"
         >
           {product.name}
         </Link>

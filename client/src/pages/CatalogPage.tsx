@@ -395,7 +395,7 @@ export function CatalogPage() {
 
       <Reveal delay={250}>
         {loading && (
-          <div aria-busy="true" className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div aria-busy="true" className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
             {Array.from({ length: 8 }).map((_, index) => (
               <div key={index} className="border border-ivory-dim p-4">
                 <Skeleton className="aspect-square w-full" />
@@ -428,7 +428,7 @@ export function CatalogPage() {
 
         {!loading && !error && data && data.items.length > 0 && (
           <>
-            <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <ul className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
               {data.items.map((product, index) => (
                 <Reveal as="li" key={product.id} delay={(index % 4) * 100 + 100}>
                   <ProductCard product={product} />

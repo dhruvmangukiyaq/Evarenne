@@ -18,7 +18,7 @@ function FeaturedProducts() {
 
   if (loading) {
     return (
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4" aria-busy="true">
+      <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4" aria-busy="true">
         {Array.from({ length: 4 }).map((_, index) => (
           <div key={index} className="border border-ivory-dim p-4">
             <Skeleton className="aspect-square w-full" />
@@ -47,7 +47,7 @@ function FeaturedProducts() {
   }
 
   return (
-    <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+    <ul className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
       {data.featured.slice(0, 4).map((product, index) => (
         <Reveal as="li" key={product.id} delay={100 + index * 100}>
           <ProductCard product={product} />
