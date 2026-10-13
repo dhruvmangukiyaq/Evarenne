@@ -41,10 +41,7 @@ const TOPICS: Topic[] = [
         body: "Carat is a measure of weight, not size. Two diamonds of the same carat weight can look noticeably different in diameter depending on how their weight is distributed across the cut. We show carat alongside measurements so you can judge both.",
       },
     ],
-    links: [
-      { label: "Browse natural diamonds", to: "/diamonds/natural" },
-      { label: "Browse lab-grown diamonds", to: "/diamonds/lab-grown" },
-    ],
+    links: [{ label: "Browse lab-grown diamonds", to: "/diamonds" }],
   },
   {
     slug: "shapes",
@@ -70,36 +67,7 @@ const TOPICS: Topic[] = [
         body: "These shapes blend a square or rectangular outline with brilliant-style faceting. They offer a squarer look with plenty of sparkle. As with all fancy shapes, proportions vary widely, so compare measurements.",
       },
     ],
-    links: [{ label: "Shop by shape", to: "/diamonds/natural" }],
-  },
-  {
-    slug: "natural-vs-lab-grown",
-    title: "Natural vs Lab-Grown Diamonds",
-    eyebrow: "An honest comparison",
-    intro:
-      "Natural and lab-grown diamonds are the same material — crystallised carbon with the same hardness and optical properties. They differ in origin, in how they're brought to market, and in the paperwork that records that origin. We show both and don't steer you toward either.",
-    sections: [
-      {
-        heading: "Origin",
-        body: "Natural diamonds formed over billions of years deep within the Earth and are mined. Lab-grown diamonds are produced using methods that replicate the growth process — typically HPHT (high pressure, high temperature) or CVD (chemical vapour deposition). The result is a diamond that is chemically, physically, and optically the same as one mined from the ground.",
-      },
-      {
-        heading: "Grading",
-        body: "Both types are graded on the same 4Cs scale by the same laboratories. A grading report describes the stone's characteristics; it does not, by itself, distinguish natural from lab-grown. Where a laboratory reports origin, we show that detail.",
-      },
-      {
-        heading: "Origin and documentation",
-        body: "Because the two are identical once grown, the difference is recorded rather than visible. Laboratories note origin on a report where they can determine it, so we show that detail alongside the grading rather than asking you to take our word for it.",
-      },
-      {
-        heading: "What we won't claim",
-        body: "We don't describe either type as an investment, and we don't make environmental or ethical claims that aren't independently substantiated. If a sustainability or sourcing statement matters to you, ask us for the specific documentation behind it.",
-      },
-    ],
-    links: [
-      { label: "Compare natural diamonds", to: "/diamonds/natural" },
-      { label: "Compare lab-grown diamonds", to: "/diamonds/lab-grown" },
-    ],
+    links: [{ label: "Shop by shape", to: "/diamonds" }],
   },
 ];
 
@@ -115,7 +83,7 @@ function HubIndex() {
         </p>
       </Reveal>
 
-      <ul className="mt-10 grid gap-5 md:grid-cols-3">
+      <ul className="mt-10 grid gap-5 md:grid-cols-2">
         {TOPICS.map((topic, index) => (
           <Reveal as="li" key={topic.slug} delay={200 + index * 150}>
             <Link

@@ -55,7 +55,7 @@ function freshIp(): Record<string, string> {
 const validPayload = {
   name: "One-off Art Deco Emerald 1.75ct",
   description: "A single stone entered through the admin panel.",
-  diamondType: "natural",
+  diamondType: "lab-grown",
   shape: "emerald",
   specs: {
     carat: 1.75,
@@ -179,7 +179,7 @@ describe("admin product CRUD", () => {
     const { status, body } = await json<{ error: string }>(`/api/admin/products`, {
       method: "POST",
       headers: { "content-type": "application/json", cookie },
-      body: JSON.stringify({ ...validPayload, slug: "evn-rd-100" }),
+      body: JSON.stringify({ ...validPayload, slug: "evl-rd-100" }),
     });
     expect(status).toBe(409);
     expect(body.error).toMatch(/already exists/);

@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react";
-import { Link, useParams, useSearchParams } from "react-router-dom";
+import { useLocation, useSearchParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { useApi } from "../lib/useApi";
 import type { CatalogResponse, DiamondShape, FacetBucket } from "../lib/api-types";
@@ -14,7 +14,7 @@ import { Button } from "../components/ui/Button";
 import { Reveal } from "../components/ui/Reveal";
 
 /**
- * Catalog page — one component powers /diamonds/:type and /search. All
+ * Catalog page — one component powers /diamonds and /search. All
  * filter/sort/page state lives in the URL query string, so links are
  * shareable and back/forward works.
  *
@@ -85,13 +85,13 @@ function scaleTicks(min: number, max: number, format: (value: number) => string)
 }
 
 export function CatalogPage() {
-  const { diamondType } = useParams<{ diamondType?: string }>();
   const [params, setParams] = useSearchParams();
+  const { pathname } = useLocation();
 
-  // Route → base scope: the diamonds routes are pinned to loose stones,
-  // search stays open across the catalog.
-  const pathname = window.location.pathname;
-  const isDiamondsRoute = pathname.startsWith("/diamonds/");
+  // Route → base scope: the diamonds route is pinned to loose stones (the
+  // catalogue carries lab-grown diamonds only), search stays open across the
+  // catalog.
+  const isDiamondsRoute = pathname === "/diamonds" || pathname.startsWith("/diamonds/");
   const isSearchRoute = pathname === "/search";
 
   const scopeCategory = useMemo(
@@ -174,7 +174,7 @@ export function CatalogPage() {
   // Build API params from URL state
   const apiParams = useMemo(() => {
     const p: Record<string, unknown> = {};
-    if (isDiamondsRoute && diamondType) p.diamondType = diamondType;
+    if (isDiamondsRoute) p.diamondType = "lab-grown";
     if (scopeCategory) p.category = scopeCategory;
     if (q) p.q = q;
     if (shapes.length) p.shapes = shapes;
@@ -191,7 +191,7 @@ export function CatalogPage() {
     p.pageSize = 12;
     return p;
   }, [
-    isDiamondsRoute, diamondType, scopeCategory, q,
+    isDiamondsRoute, scopeCategory, q,
     shapes, cuts, colors, clarities, polishes, symmetries, fluorescences,
     caratMin, caratMax, sort, page,
   ]);
@@ -207,19 +207,16 @@ export function CatalogPage() {
   // Page titles per route
   const pageTitle = useMemo(() => {
     if (isSearchRoute) return q ? `Search: “${q}”` : "Search";
-    if (isDiamondsRoute) return diamondType === "lab-grown" ? "Lab-Grown Diamonds" : "Natural Diamonds";
+    if (isDiamondsRoute) return "Lab-Grown Diamonds";
     return "Collection";
-  }, [isSearchRoute, isDiamondsRoute, diamondType, q]);
+  }, [isSearchRoute, isDiamondsRoute, q]);
 
   const breadcrumbItems = useMemo<Crumb[]>(() => {
     const crumbs: Crumb[] = [{ label: "Home", to: "/" }];
     if (isSearchRoute) crumbs.push({ label: "Search" });
-    else if (isDiamondsRoute) {
-      crumbs.push({ label: "Diamonds" });
-      crumbs.push({ label: diamondType === "lab-grown" ? "Lab-Grown" : "Natural" });
-    }
+    else if (isDiamondsRoute) crumbs.push({ label: "Diamonds" });
     return crumbs;
-  }, [isSearchRoute, isDiamondsRoute, diamondType]);
+  }, [isSearchRoute, isDiamondsRoute]);
 
   const facets = data?.facets;
 
@@ -293,15 +290,6 @@ export function CatalogPage() {
     filters.push(polishFilter, symmetryFilter, fluorescenceFilter, cutFilter);
   }
 
-  const isNatural = diamondType !== "lab-grown";
-  // Sentence-case display type, generous padding: the reference toggle.
-  const segmentClass = (active: boolean) =>
-    `inline-flex h-[3.25rem] items-center rounded-[5px] border px-9 font-display text-base transition-colors ${
-      active
-        ? "border-olive bg-olive text-ivory"
-        : "border-charcoal/25 bg-white text-charcoal hover:border-olive hover:text-olive"
-    }`;
-
   return (
     <div className="mx-auto max-w-(--container-page) px-4 py-8 lg:px-8">
       <Breadcrumbs items={breadcrumbItems} className="mb-5" />
@@ -316,33 +304,6 @@ export function CatalogPage() {
       </Reveal>
 
       <Reveal delay={200} className="mb-7">
-        {isDiamondsRoute && (
-          <div className="mb-6 flex justify-center">
-            <nav aria-label="Diamond type" className="flex flex-wrap justify-center gap-4">
-              <Link
-                to={{
-                  pathname: "/diamonds/natural",
-                  search: params.size ? `?${params.toString()}` : "",
-                }}
-                aria-current={isNatural ? "page" : undefined}
-                className={segmentClass(isNatural)}
-              >
-                Natural Diamond
-              </Link>
-              <Link
-                to={{
-                  pathname: "/diamonds/lab-grown",
-                  search: params.size ? `?${params.toString()}` : "",
-                }}
-                aria-current={!isNatural ? "page" : undefined}
-                className={segmentClass(!isNatural)}
-              >
-                Lab-Grown
-              </Link>
-            </nav>
-          </div>
-        )}
-
         <FilterBar
           filters={filters}
           onToggle={(key, value) => toggleMulti(key as ParamKey, value)}

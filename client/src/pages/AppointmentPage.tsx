@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Input, Select, Textarea, Checkbox } from "../components/ui/Form";
 import { Button } from "../components/ui/Button";
 import { Reveal } from "../components/ui/Reveal";
@@ -53,6 +54,14 @@ const TIME_OPTIONS = [
 
 export function AppointmentPage() {
   const { toast } = useToast();
+  // Product context carried over from a diamond's "Inquire Now" button, so the
+  // form already knows which stone prompted the enquiry.
+  const [searchParams] = useSearchParams();
+  const productName = searchParams.get("product");
+  const productSku = searchParams.get("sku");
+  const productNote = productName
+    ? `I'm interested in ${productName}${productSku ? ` (SKU ${productSku})` : ""}.`
+    : "";
   const [state, setState] = useState<FormState>({
     name: "",
     email: "",
@@ -61,8 +70,8 @@ export function AppointmentPage() {
     date: "",
     time: "",
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    topic: "",
-    notes: "",
+    topic: productName ? "diamond" : "",
+    notes: productNote,
     consent: false,
   });
   const [errors, setErrors] = useState<FormErrors>({});
@@ -111,7 +120,19 @@ export function AppointmentPage() {
               className="mt-8"
               onClick={() => {
                 setSubmitted(false);
-                setState((s) => ({ ...s, name: "", email: "", phone: "", type: "", date: "", time: "", topic: "", notes: "", consent: false }));
+                // Clears the answers but keeps the stone the visitor came from.
+                setState((s) => ({
+                  ...s,
+                  name: "",
+                  email: "",
+                  phone: "",
+                  type: "",
+                  date: "",
+                  time: "",
+                  topic: productName ? "diamond" : "",
+                  notes: productNote,
+                  consent: false,
+                }));
               }}
             >
               Submit another request
@@ -126,12 +147,18 @@ export function AppointmentPage() {
     <div className="mx-auto max-w-(--container-lg) px-4 py-12 lg:px-8">
       <Reveal delay={100}>
         <p className="text-eyebrow text-champagne-deep">Client care</p>
-        <h1 className="mt-2 font-display text-h1 text-charcoal">Book an Appointment</h1>
+        <h1 className="mt-2 font-display text-h1 text-charcoal">Inquire Now</h1>
         <p className="mt-4 max-w-2xl text-body-lg text-charcoal-soft">
           Meet with a diamond specialist in person or over video. Tell us what you're looking for and
           we'll prepare so your time is well spent. Submitting this form is a request — we'll confirm
           the exact time with you directly.
         </p>
+        {productName && (
+          <p className="mt-4 inline-flex border border-olive/30 bg-olive/10 px-3 py-1.5 font-sans text-sm text-olive">
+            Enquiring about {productName}
+            {productSku ? ` · SKU ${productSku}` : ""}
+          </p>
+        )}
       </Reveal>
 
       <form onSubmit={onSubmit} noValidate className="mt-10 grid max-w-3xl gap-6 md:grid-cols-2">

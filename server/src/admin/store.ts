@@ -26,9 +26,16 @@ export interface ProductStore {
   remove(id: string): Promise<boolean>;
 }
 
-/** Merges admin-created products ahead of the bundled seed. */
+/**
+ * Merges admin-created products ahead of the bundled seed.
+ *
+ * Lab-grown only: any stored record that is not lab-grown (a listing saved
+ * before the natural line was dropped) never reaches the public catalogue.
+ * It is still listed in the admin panel, where it can be deleted.
+ */
 export function withSeedProducts(adminProducts: Product[]): Product[] {
-  return adminProducts.length > 0 ? [...adminProducts, ...SEED_PRODUCTS] : SEED_PRODUCTS;
+  const visible = adminProducts.filter((product) => product.diamondType === "lab-grown");
+  return visible.length > 0 ? [...visible, ...SEED_PRODUCTS] : SEED_PRODUCTS;
 }
 
 /** In-memory store: used by tests and as a safe fallback when no store is bound. */

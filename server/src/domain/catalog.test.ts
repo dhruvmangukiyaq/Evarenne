@@ -37,6 +37,13 @@ describe("seed data integrity", () => {
     }
   });
 
+  it("carries lab-grown diamonds only", () => {
+    expect(products.length).toBeGreaterThan(0);
+    for (const product of products) {
+      expect(product.diamondType).toBe("lab-grown");
+    }
+  });
+
   it("carries only loose diamonds — no rings, settings or jewelry", () => {
     expect(products.length).toBeGreaterThan(0);
     for (const product of products) {
@@ -47,15 +54,6 @@ describe("seed data integrity", () => {
 });
 
 describe("queryCatalog — scoping", () => {
-  it("scopes to natural diamonds", () => {
-    const result = queryCatalog(products, { diamondType: "natural", pageSize: 100 });
-    expect(result.items.length).toBeGreaterThan(0);
-    for (const p of result.items) {
-      expect(p.kind).toBe("diamond");
-      expect(p.diamondType).toBe("natural");
-    }
-  });
-
   it("scopes to lab-grown diamonds", () => {
     const result = queryCatalog(products, { diamondType: "lab-grown", pageSize: 100 });
     expect(result.items.length).toBeGreaterThan(0);
@@ -74,8 +72,8 @@ describe("queryCatalog — scoping", () => {
   it("returns total matching the filtered set, not the page", () => {
     const result = queryCatalog(products, { category: "loose-diamond", pageSize: 5 });
     expect(result.items).toHaveLength(5);
-    expect(result.total).toBe(27);
-    expect(result.totalPages).toBe(Math.ceil(27 / 5));
+    expect(result.total).toBe(products.length);
+    expect(result.totalPages).toBe(Math.ceil(products.length / 5));
   });
 });
 
@@ -110,7 +108,7 @@ describe("queryCatalog — filters combine with AND", () => {
   it("filters by cut, color, clarity on loose diamonds", () => {
     const result = queryCatalog(products, {
       category: "loose-diamond",
-      diamondType: "natural",
+      diamondType: "lab-grown",
       cuts: ["Excellent"],
       colors: ["E", "F"],
       clarities: ["VS1", "VVS2"],
@@ -163,8 +161,8 @@ describe("queryCatalog — search", () => {
   });
 
   it("matches by SKU exactly and ranks it first", () => {
-    const result = queryCatalog(products, { q: "evn-rd-100" });
-    expect(result.items[0]?.sku).toBe("EVN-RD-100");
+    const result = queryCatalog(products, { q: "evl-rd-100" });
+    expect(result.items[0]?.sku).toBe("EVL-RD-100");
   });
 
   it("returns nothing for an unknown term", () => {
@@ -259,8 +257,8 @@ describe("queryCatalog — facets", () => {
 
 describe("findProduct", () => {
   it("finds by slug", () => {
-    const found = findProduct(products, "evn-rd-100");
-    expect(found?.sku).toBe("EVN-RD-100");
+    const found = findProduct(products, "evl-rd-100");
+    expect(found?.sku).toBe("EVL-RD-100");
   });
 
   it("finds by id", () => {

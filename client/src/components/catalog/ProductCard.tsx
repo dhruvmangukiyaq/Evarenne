@@ -30,11 +30,7 @@ export function ProductCard({ product }: { product: Product }) {
 
       <div className="flex flex-1 flex-col gap-2 p-3 sm:p-4">
         <div className="flex flex-wrap gap-1.5">
-          {product.diamondType && (
-            <Badge tone={product.diamondType === "natural" ? "olive" : "champagne"}>
-              {product.diamondType === "natural" ? "Natural" : "Lab-Grown"}
-            </Badge>
-          )}
+          {product.diamondType && <Badge tone="champagne">Lab-Grown</Badge>}
         </div>
 
         <Link

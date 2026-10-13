@@ -88,18 +88,18 @@ describe("RadioGroup", () => {
     const onChange = vi.fn();
     render(
       <RadioGroup
-        legend="Diamond type"
-        name="type"
+        legend="Diamond shape"
+        name="shape"
         value={null}
         onChange={onChange}
         options={[
-          { value: "natural", label: "Natural" },
-          { value: "lab-grown", label: "Lab-Grown" },
+          { value: "round", label: "Round" },
+          { value: "oval", label: "Oval" },
         ]}
       />,
     );
-    await userEvent.click(screen.getByRole("radio", { name: /lab-grown/i }));
-    expect(onChange).toHaveBeenCalledWith("lab-grown");
+    await userEvent.click(screen.getByRole("radio", { name: /oval/i }));
+    expect(onChange).toHaveBeenCalledWith("oval");
   });
 });
 
@@ -137,8 +137,8 @@ describe("EmptyState / ErrorState / Skeleton / Badge", () => {
   });
 
   it("renders badge with visible text (not color-only)", () => {
-    render(<Badge tone="olive">Natural</Badge>);
-    expect(screen.getByText("Natural")).toBeInTheDocument();
+    render(<Badge tone="olive">Lab-Grown</Badge>);
+    expect(screen.getByText("Lab-Grown")).toBeInTheDocument();
   });
 });
 

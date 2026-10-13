@@ -1,5 +1,5 @@
 import { Suspense, lazy } from "react";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { Layout } from "./components/layout/Layout";
 import { ToastProvider } from "./components/ui/Toast";
 import { HomePage } from "./pages/HomePage";
@@ -46,6 +46,16 @@ function PageFallback() {
       </div>
     </div>
   );
+}
+
+/**
+ * The catalogue sells lab-grown diamonds only, so the old stone-type URLs
+ * collapse onto the one catalog. The query string is carried over, so a
+ * shared link with filters still lands on the same result set.
+ */
+function DiamondsRedirect() {
+  const location = useLocation();
+  return <Navigate to={{ pathname: "/diamonds", search: location.search }} replace />;
 }
 
 export default function App() {
@@ -103,7 +113,8 @@ export default function App() {
             <Route index element={<HomePage />} />
 
             {/* Catalog routes */}
-            <Route path="diamonds/:diamondType" element={<CatalogPage />} />
+            <Route path="diamonds" element={<CatalogPage />} />
+            <Route path="diamonds/:diamondType" element={<DiamondsRedirect />} />
             <Route path="search" element={<CatalogPage />} />
 
             {/* Product detail */}

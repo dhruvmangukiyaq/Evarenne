@@ -125,11 +125,6 @@ export function AdminProductsPage() {
                     >
                       {product.name}
                     </Link>
-                    {product.diamondType && (
-                      <Badge tone={product.diamondType === "natural" ? "olive" : "champagne"}>
-                        {product.diamondType === "natural" ? "Natural" : "Lab-Grown"}
-                      </Badge>
-                    )}
                     {product.featured && <Badge tone="champagne">Homepage</Badge>}
                     {product.video && <Badge tone="neutral">Video</Badge>}
                   </div>

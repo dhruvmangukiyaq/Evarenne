@@ -40,7 +40,11 @@ export type SymmetryGrade = (typeof SYMMETRY_GRADES)[number];
 export const FLUORESCENCE_GRADES = ["None", "Faint", "Medium", "Strong"] as const;
 export type FluorescenceGrade = (typeof FLUORESCENCE_GRADES)[number];
 
-export const DIAMOND_TYPES = ["natural", "lab-grown"] as const;
+/**
+ * The catalogue sells lab-grown diamonds only — natural stones were removed
+ * from the product line, so the enum deliberately offers no other value.
+ */
+export const DIAMOND_TYPES = ["lab-grown"] as const;
 export type DiamondType = (typeof DIAMOND_TYPES)[number];
 
 export const CATEGORIES = ["loose-diamond"] as const;
@@ -123,7 +127,7 @@ export type SortOption = (typeof SORT_OPTIONS)[number];
 export interface CatalogQuery {
   /** Category route scope; when set, only that category is considered. */
   category?: Category;
-  /** Diamond type scope, e.g. /diamonds/natural. */
+  /** Diamond type scope, e.g. /diamonds (lab-grown only). */
   diamondType?: DiamondType;
   q?: string;
   shapes?: DiamondShape[];

@@ -55,7 +55,7 @@ export function ProductDetailPage() {
             This product may have been removed or the link may be incorrect.
           </p>
           <Link
-            to="/diamonds/natural"
+            to="/diamonds"
             className="mt-6 inline-flex h-11 items-center bg-olive px-6 font-sans text-sm font-medium text-ivory hover:bg-olive-hover anim-shrink"
           >
             Browse diamonds
@@ -82,9 +82,14 @@ export function ProductDetailPage() {
 
   const breadcrumbItems = [
     { label: "Home", to: "/" },
-    { label: "Diamonds", to: "/diamonds/natural" },
+    { label: "Diamonds", to: "/diamonds" },
     { label: product.name },
   ];
+
+  // Carried into the inquiry form so the specialist knows which stone prompted it.
+  const inquiryTo =
+    `/appointments?product=${encodeURIComponent(product.name)}` +
+    (product.sku ? `&sku=${encodeURIComponent(product.sku)}` : "");
 
   return (
     <div className="mx-auto max-w-(--container-page) px-4 py-8 lg:px-8">
@@ -160,11 +165,7 @@ export function ProductDetailPage() {
         {/* Details */}
         <Reveal delay={250} variant="soft">
           <div className="flex flex-wrap gap-2">
-            {product.diamondType && (
-              <Badge tone={product.diamondType === "natural" ? "olive" : "champagne"}>
-                {product.diamondType === "natural" ? "Natural" : "Lab-Grown"}
-              </Badge>
-            )}
+            {product.diamondType && <Badge tone="champagne">Lab-Grown</Badge>}
             {product.dataSource === "development-seed" && (
               <Badge tone="neutral">Sample data</Badge>
             )}
@@ -176,6 +177,22 @@ export function ProductDetailPage() {
           </p>
 
           <p className="mt-5 leading-relaxed text-charcoal-soft">{product.description}</p>
+
+          {/* Inquiry CTA — the catalogue never sells online, so interest in a
+              stone always opens a conversation with a specialist. */}
+          <div className="mt-8 border border-ivory-dim bg-ivory-deep p-6">
+            <h2 className="font-display text-h3 text-charcoal">Interested in this diamond?</h2>
+            <p className="mt-2 text-sm leading-relaxed text-charcoal-soft">
+              Send an inquiry and a specialist will come prepared with this stone's grading details,
+              comparable options and viewing times.
+            </p>
+            <Link
+              to={inquiryTo}
+              className="mt-5 inline-flex h-[3.25rem] items-center bg-olive px-8 font-sans text-base font-medium text-ivory hover:bg-olive-hover anim-shrink"
+            >
+              Inquire Now
+            </Link>
+          </div>
 
           {/* Specifications */}
           {(specs || product.shape) && (

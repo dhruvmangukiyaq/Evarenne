@@ -17,7 +17,7 @@ export function NotFoundPage() {
           Return home
         </Link>
         <Link
-          to="/diamonds/natural"
+          to="/diamonds"
           className="inline-flex h-11 items-center border border-olive px-6 font-sans text-sm font-medium text-olive hover:bg-olive hover:text-ivory anim-shrink"
         >
           Browse diamonds

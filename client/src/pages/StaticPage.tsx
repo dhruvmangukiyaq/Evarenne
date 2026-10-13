@@ -32,8 +32,8 @@ const PAGES: Record<string, StaticPageDefinition> = {
         body: "Clarity in what we present, honesty about what we can and cannot verify, and jewellery made to be worn for decades. Every product page shows the exact specifications we hold for that piece — and nothing we don't.",
       },
       {
-        heading: "Natural and lab-grown, side by side",
-        body: "We present both natural and lab-grown diamonds without steering you toward one. They differ in origin; they do not differ in the way they're graded. Our guide explains the details.",
+        heading: "Lab-grown, presented plainly",
+        body: "Evarenne offers lab-grown diamonds only. Every stone we list carries its exact specifications and the grading we hold for it — nothing invented, nothing rounded up. Our guide explains the details.",
       },
     ],
   },
@@ -53,8 +53,8 @@ const PAGES: Record<string, StaticPageDefinition> = {
       "The full FAQ is being drafted with the business owner so every answer reflects actual policy. It will cover collections, grading reports, care, and viewing appointments.",
     sections: [
       {
-        heading: "Do you show both natural and lab-grown diamonds?",
-        body: "Yes. Both are shown as loose stones and in finished jewellery. Natural and lab-grown diamonds are chemically and optically the same material; they differ in origin.",
+        heading: "Are lab-grown diamonds real diamonds?",
+        body: "Yes. A lab-grown diamond is crystallised carbon — the same material, hardness and optical properties — and it is graded on the same 4Cs scale by the same laboratories. The difference is origin: grown under controlled conditions rather than taken from the ground.",
       },
       {
         heading: "Are the diamonds certified?",
@@ -153,7 +153,7 @@ export function StaticPage() {
             to="/appointments"
             className="inline-flex h-11 items-center bg-olive px-6 font-sans text-sm font-medium text-ivory hover:bg-olive-hover anim-shrink"
           >
-            Book an appointment
+            Inquire Now
           </Link>
         </div>
       </Reveal>

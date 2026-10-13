@@ -57,7 +57,7 @@ Likely files: `src/app/globals.css`, `src/theme/*`, `src/components/ui/*`.
 - Acceptance: components share tokens; premium/calm/editorial look; keyboard focus visible.
 
 ## PHASE 2 — GLOBAL NAVIGATION AND DISCOVERY `[ ]`
-- [ ] Header: Engagement Rings, Wedding Rings, Natural Diamonds, Lab-Grown Diamonds, Fine Jewelry, Diamond Guide, Our Story, Book an Appointment
+- [ ] Header: Engagement Rings, Wedding Rings, Natural Diamonds, Lab-Grown Diamonds, Fine Jewelry, Diamond Guide, Our Story, Inquire Now
 - [ ] Original brand wordmark placeholder (no Tiffany branding)
 - [ ] Search overlay → real results from seed catalog
 - [ ] Account link (only if auth exists), wishlist w/ working saved state, cart icon + count + accessible drawer

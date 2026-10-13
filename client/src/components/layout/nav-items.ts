@@ -6,11 +6,11 @@ import type { DiamondShape } from "../../lib/api-types";
  * same query-parameter contract the catalog page reads, so filters and nav can
  * never drift apart.
  *
- * Scope note: the primary nav intentionally exposes a single "Diamond" entry.
- * Its mega panel carries both loose catalogs — natural and lab-grown — as side
- * by side shape columns, so a shopper picks the stone type from one surface
- * instead of two nav items. Education and support destinations remain
- * reachable from the footer and the homepage — they are not surfaced here.
+ * Scope note: the primary nav intentionally exposes a single "Diamond" entry
+ * whose mega panel lists every loose lab-grown shape as a column of links, so
+ * a shopper picks a cut from one surface. Education and support destinations
+ * remain reachable from the footer and the homepage — they are not surfaced
+ * here.
  */
 
 export interface NavLink {
@@ -79,12 +79,9 @@ const looseGroup = (label: string, allLabel: string, path: string): NavGroup => 
 export const navItems: NavItem[] = [
   {
     label: "Diamond",
-    to: "/diamonds/natural",
+    to: "/diamonds",
     menu: {
-      groups: [
-        looseGroup("Loose Natural Shape", "All Loose Natural", "/diamonds/natural"),
-        looseGroup("Loose Lab-Grown Shape", "All Loose Lab-Grown", "/diamonds/lab-grown"),
-      ],
+      groups: [looseGroup("Loose Lab-Grown Shapes", "All Lab-Grown Diamonds", "/diamonds")],
       image: {
         shape: "round",
         alt: "Sample photograph of a round brilliant cut, shown as a shape reference",
@@ -92,5 +89,5 @@ export const navItems: NavItem[] = [
     },
   },
   { label: "Our Story", to: "/our-story" },
-  { label: "Book an Appointment", to: "/appointments" },
+  { label: "Inquire Now", to: "/appointments" },
 ];

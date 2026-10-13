@@ -11,7 +11,7 @@ import {
 } from "../../lib/admin-api";
 import { useApi } from "../../lib/useApi";
 import { shapeLabel } from "../../lib/labels";
-import type { AdminProductInput, DiamondShape, DiamondType, Product } from "../../lib/api-types";
+import type { AdminProductInput, DiamondShape, Product } from "../../lib/api-types";
 import { Button } from "../../components/ui/Button";
 import { Checkbox, Input, Select, Textarea } from "../../components/ui/Form";
 import { ErrorState, Skeleton } from "../../components/ui/Display";
@@ -66,7 +66,6 @@ function withValue(
 interface FormState {
   name: string;
   description: string;
-  diamondType: DiamondType;
   shape: DiamondShape | "";
   featured: boolean;
   /** Uploaded storage paths, in display order. */
@@ -91,7 +90,6 @@ function emptyForm(): FormState {
   return {
     name: "",
     description: "",
-    diamondType: "natural",
     shape: "",
     featured: false,
     images: [],
@@ -117,7 +115,6 @@ function fromProduct(product: Product): FormState {
   return {
     name: product.name,
     description: product.description,
-    diamondType: product.diamondType ?? "natural",
     shape: product.shape ?? "",
     featured: product.featured === true,
     images: product.images.map((image) => image.src),
@@ -297,7 +294,9 @@ function ProductForm({ initial }: { initial: Product | null }) {
     const input: AdminProductInput = {
       name,
       description: state.description.trim(),
-      diamondType: state.diamondType,
+      // Lab-grown only: the natural line was removed from the catalogue, so the
+      // form no longer offers a stone-type choice.
+      diamondType: "lab-grown",
       shape: state.shape,
       specs: {
         carat,
@@ -398,7 +397,7 @@ function ProductForm({ initial }: { initial: Product | null }) {
             value={state.name}
             onChange={(event) => set("name", event.target.value)}
             error={errorFor("name")}
-            placeholder="Natural Oval Brilliant 1.50ct VVS1"
+            placeholder="Lab-Grown Oval Brilliant 1.50ct VVS1"
             hint="How the piece reads in the catalogue and on its own page."
             disabled={submitting}
           />
@@ -415,29 +414,16 @@ function ProductForm({ initial }: { initial: Product | null }) {
             disabled={submitting}
           />
 
-          <div className="grid gap-5 sm:grid-cols-2">
-            <Select
-              label="Diamond type"
-              required
-              value={state.diamondType}
-              onChange={(event) => set("diamondType", event.target.value as DiamondType)}
-              options={[
-                { value: "natural", label: "Natural" },
-                { value: "lab-grown", label: "Lab-grown" },
-              ]}
-              disabled={submitting}
-            />
-            <Select
-              label="Shape"
-              required
-              placeholder="Choose a shape"
-              value={state.shape}
-              onChange={(event) => set("shape", event.target.value as DiamondShape | "")}
-              options={SHAPES.map((shape) => ({ value: shape, label: shapeLabel(shape) }))}
-              error={errorFor("shape")}
-              disabled={submitting}
-            />
-          </div>
+          <Select
+            label="Shape"
+            required
+            placeholder="Choose a shape"
+            value={state.shape}
+            onChange={(event) => set("shape", event.target.value as DiamondShape | "")}
+            options={SHAPES.map((shape) => ({ value: shape, label: shapeLabel(shape) }))}
+            error={errorFor("shape")}
+            disabled={submitting}
+          />
 
           <Checkbox
             label="Feature on the homepage"

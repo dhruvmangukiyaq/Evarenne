@@ -427,3 +427,146 @@
     transform: scale(0.9);
   }
 }
+
+/*
+ * ── Motion: the hero drop ────────────────────────────────────────────────
+ * The homepage stage performs one gesture: a loose round brilliant falls
+ * from above the stage and seats itself in the display stand, as though
+ * someone set it down from out of frame. A single keyframe track carries
+ * the whole move — accelerating fall (gravity-ish ease-in), squash on
+ * impact, a small rebound, settle. The stand's recoil, the ground-shadow
+ * pulse and the spark burst are separate elements keyed to --hero-impact,
+ * the 70% mark of the track plus the drop's delay, so the landing reads as
+ * one event.
+ *
+ * Distances are SVG user units (the scene is one 640×700 viewBox), so the
+ * gesture scales with the stage at every breakpoint. `.hero-drop` uses
+ * fill-box so its squash pivots on the stone's seat, not the scene origin.
+ *
+ * prefers-reduced-motion (global override, base layer) collapses the
+ * timeline to its final frame: stone seated, sparks spent, stand settled.
+ */
+@layer components {
+  .hero-stage {
+    --hero-drop-delay: 300ms;
+    /* 300ms of stage + 70% of the 1500ms track = the moment of impact */
+    --hero-impact: 1350ms;
+  }
+
+  .hero-drop {
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+    animation: heroDrop 1500ms both var(--hero-drop-delay);
+  }
+
+  /* The stand is drawn in two groups (behind and in front of the stone);
+   * both share the view-box origin so they recoil as one object. */
+  .hero-stand {
+    transform-box: view-box;
+    transform-origin: 320px 622px;
+    animation:
+      fadeIn 500ms ease both 150ms,
+      heroStandRecoil 640ms var(--ease-luxury) both var(--hero-impact);
+  }
+
+  .hero-ground {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: heroGroundPulse 620ms var(--ease-luxury) both var(--hero-impact);
+  }
+
+  .hero-spark {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: heroSpark 700ms ease-out both var(--hero-impact);
+  }
+
+  .hero-glint {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: heroGlint 4.8s ease-in-out infinite both;
+  }
+}
+
+@keyframes heroDrop {
+  0% {
+    transform: translateY(-560px) rotate(-14deg);
+    animation-timing-function: cubic-bezier(0.5, 0, 0.8, 0.35);
+  }
+  70% {
+    transform: translateY(0) rotate(0deg) scale(1.05, 0.93);
+    animation-timing-function: cubic-bezier(0.2, 0.7, 0.3, 1.45);
+  }
+  81% {
+    transform: translateY(-60px) rotate(-5deg) scale(1.01, 1.03);
+    animation-timing-function: cubic-bezier(0.33, 0, 0.6, 1);
+  }
+  91% {
+    transform: translateY(0) rotate(0deg) scale(1.02, 0.98);
+  }
+  100% {
+    transform: translateY(0) rotate(0deg) scale(1);
+  }
+}
+
+@keyframes heroStandRecoil {
+  0% {
+    transform: scaleY(1) scaleX(1);
+  }
+  26% {
+    transform: scaleY(0.955) scaleX(1.02);
+  }
+  55% {
+    transform: scaleY(1.012) scaleX(0.995);
+  }
+  100% {
+    transform: scaleY(1) scaleX(1);
+  }
+}
+
+@keyframes heroGroundPulse {
+  0% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.22, 1.12);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes heroSpark {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.4);
+  }
+  18% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--sx, 0px), var(--sy, 0px)) scale(1.15);
+  }
+}
+
+/* Loop-safe: the glint's 100% frame matches its start at opacity 0, so the
+ * rotation reset is never visible. */
+@keyframes heroGlint {
+  0% {
+    opacity: 0;
+    transform: scale(0.25) rotate(0deg);
+  }
+  8% {
+    opacity: 0.95;
+    transform: scale(1) rotate(12deg);
+  }
+  20% {
+    opacity: 0;
+    transform: scale(0.35) rotate(24deg);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.25) rotate(40deg);
+  }
+}

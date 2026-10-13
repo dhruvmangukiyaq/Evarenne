@@ -2,7 +2,8 @@ import { Link } from "react-router-dom";
 import { api } from "../lib/api";
 import { useApi } from "../lib/useApi";
 import { ProductCard } from "../components/catalog/ProductCard";
-import { DiamondArt, ShapePhoto } from "../components/catalog/ProductArt";
+import { DiamondArt } from "../components/catalog/ProductArt";
+import { HeroStage } from "../components/home/HeroStage";
 import { shapeLabel } from "../lib/labels";
 import { Skeleton } from "../components/ui/Display";
 import { Reveal } from "../components/ui/Reveal";
@@ -37,7 +38,7 @@ function FeaturedProducts() {
           Featured pieces appear here once the catalog marks items as featured.
         </p>
         <Link
-          to="/diamonds/natural"
+          to="/diamonds"
           className="mt-4 inline-flex h-11 items-center border border-olive px-6 font-sans text-sm font-medium text-olive hover:bg-olive hover:text-ivory anim-shrink"
         >
           Browse diamonds
@@ -65,7 +66,7 @@ export function HomePage() {
         <div className="mx-auto grid max-w-(--container-page) items-center gap-10 px-4 py-16 lg:grid-cols-2 lg:gap-16 lg:px-8 lg:py-28">
           <div className="relative z-10">
             <Reveal delay={100}>
-              <p className="text-eyebrow text-champagne-deep">Natural &amp; Lab-Grown Diamonds</p>
+              <p className="text-eyebrow text-champagne-deep">Lab-Grown Diamonds</p>
               <h1 className="mt-4 font-display text-display text-charcoal">
                 A diamond chosen
                 <br />
@@ -83,33 +84,25 @@ export function HomePage() {
             <Reveal delay={400}>
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link
-                  to="/diamonds/natural"
+                  to="/diamonds"
                   className="inline-flex h-[3.25rem] items-center bg-olive px-8 font-sans text-base font-medium text-ivory hover:bg-olive-hover anim-shrink"
                 >
-                  Browse Natural Diamonds
+                  Browse Lab-Grown Diamonds
                 </Link>
                 <Link
-                  to="/diamonds/lab-grown"
+                  to="/appointments"
                   className="inline-flex h-[3.25rem] items-center border border-olive px-8 font-sans text-base font-medium text-olive hover:bg-olive hover:text-ivory anim-shrink"
                 >
-                  Browse Lab-Grown
+                  Inquire Now
                 </Link>
               </div>
             </Reveal>
           </div>
 
-          {/* Decorative diamond composition — sample photographs of each cut */}
-          <div aria-hidden="true" className="relative hidden aspect-square lg:block">
-            <Reveal delay={500} variant="fade" className="absolute top-0 right-0 w-3/5 rotate-6 border border-champagne/30 bg-ivory p-3 shadow-card">
-              <ShapePhoto shape="round" alt="" loading="eager" className="aspect-square w-full" />
-            </Reveal>
-            <Reveal delay={650} variant="fade" className="absolute bottom-4 left-0 w-1/2 -rotate-6 border border-champagne/30 bg-ivory p-3 shadow-card">
-              <ShapePhoto shape="oval" alt="" loading="eager" className="aspect-square w-full" />
-            </Reveal>
-            <Reveal delay={800} variant="fade" className="absolute right-8 bottom-0 w-2/5 rotate-12 border border-champagne/30 bg-ivory p-3 shadow-card">
-              <ShapePhoto shape="emerald" alt="" loading="eager" className="aspect-square w-full" />
-            </Reveal>
-          </div>
+          {/* The stage: the diamond drops in from above and seats itself in
+              the stand on load. It carries its own entrance, so no scroll
+              reveal. */}
+          <HeroStage className="order-first mx-auto w-full max-w-sm sm:max-w-md lg:order-none lg:max-w-none" />
         </div>
         <div className="rule-champagne" />
       </section>
@@ -126,7 +119,7 @@ export function HomePage() {
           {HOME_SHAPES.map((shape, index) => (
             <Reveal as="li" key={shape} delay={200 + index * 100}>
               <Link
-                to={`/diamonds/natural?shapes=${shape}`}
+                to={`/diamonds?shapes=${shape}`}
                 className="group flex flex-col items-center gap-2 border border-transparent p-3 transition-colors hover:border-ivory-dim"
               >
                 <DiamondArt
@@ -143,33 +136,32 @@ export function HomePage() {
         </ul>
       </section>
 
-      {/* ---- Natural vs lab-grown ---- */}
+      {/* ---- Why lab-grown ---- */}
       <Reveal delay={100} variant="soft">
-        <section aria-labelledby="vs-heading" className="bg-olive py-16 text-ivory">
+        <section aria-labelledby="lab-heading" className="bg-olive py-16 text-ivory">
           <div className="mx-auto max-w-(--container-lg) px-4 lg:px-8">
             <div className="mb-10 text-center">
-              <p className="text-eyebrow text-champagne">Understand the difference</p>
-              <h2 id="vs-heading" className="mt-2 font-display text-h2">
-                Natural vs Lab-Grown
+              <p className="text-eyebrow text-champagne">Why lab-grown</p>
+              <h2 id="lab-heading" className="mt-2 font-display text-h2">
+                The Same Diamond, Grown
               </h2>
             </div>
             <div className="grid gap-8 md:grid-cols-2">
               <Reveal delay={200}>
                 <div className="h-full border border-ivory/20 p-8">
-                  <h3 className="font-display text-h3">Natural diamonds</h3>
+                  <h3 className="font-display text-h3">Identical material</h3>
                   <p className="mt-3 text-sm leading-relaxed text-ivory/85">
-                    Formed over billions of years deep within the Earth, natural diamonds are mined, cut,
-                    and graded. Their rarity is part of what makes each one worth examining closely.
+                    A lab-grown diamond is crystallised carbon — the same hardness, brilliance and
+                    optical properties as any other diamond, assessed on the same 4Cs scale.
                   </p>
                 </div>
               </Reveal>
               <Reveal delay={350}>
                 <div className="h-full border border-ivory/20 p-8">
-                  <h3 className="font-display text-h3">Lab-grown diamonds</h3>
+                  <h3 className="font-display text-h3">Origin you can trace</h3>
                   <p className="mt-3 text-sm leading-relaxed text-ivory/85">
-                    Created in a laboratory using methods that replicate natural growth, lab-grown diamonds
-                    share the same chemical structure and are graded on the same scale. Only the origin
-                    differs.
+                    Every stone is grown under controlled conditions, so where it came from is
+                    documented from the first day rather than inferred afterwards.
                   </p>
                 </div>
               </Reveal>
@@ -238,7 +230,7 @@ export function HomePage() {
               to="/appointments"
               className="inline-flex h-[3.25rem] items-center bg-olive px-8 font-sans text-base font-medium text-ivory hover:bg-olive-hover anim-shrink"
             >
-              Book an Appointment
+              Inquire Now
             </Link>
           </div>
         </Reveal>

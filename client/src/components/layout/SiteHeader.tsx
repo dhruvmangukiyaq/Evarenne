@@ -53,7 +53,9 @@ function Wordmark({
 
 export function SiteHeader() {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
-  const openMenuItem = openMenu ? navItems.find((item) => item.label === openMenu) : undefined;
+  const openMenuPanel = openMenu
+    ? navItems.find((item) => item.label === openMenu)?.menu
+    : undefined;
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const location = useLocation();
@@ -168,14 +170,27 @@ export function SiteHeader() {
 
           {/* Panel is anchored to the nav (not the trigger) so it spans the full
               width and the shape grid never collapses into the trigger's width. */}
-          {openMenuItem?.menu && (
+          {openMenuPanel && (
             <div className="absolute top-full left-0 right-0 border border-t-0 border-ivory-dim bg-sand shadow-card-hover">
-              <div className="mx-auto grid max-w-(--container-page) items-stretch gap-x-14 gap-y-10 px-8 py-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_18rem]">
-                {openMenuItem.menu.groups.map((group) => (
+              {/* The panel draws one shape column per group. There is a single
+                  group now (the lab-grown catalog), so the photo keeps the
+                  right-hand slot and the shapes hold a readable measure. */}
+              <div
+                className={`mx-auto grid max-w-(--container-page) items-stretch gap-x-14 gap-y-10 px-8 py-8 ${
+                  openMenuPanel.groups.length > 1
+                    ? "lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_18rem]"
+                    : "lg:grid-cols-[minmax(0,1fr)_18rem]"
+                }`}
+              >
+                {openMenuPanel.groups.map((group) => (
                   <div key={group.label} className="flex flex-col">
                     <p className="mb-5 font-display text-h4 text-charcoal">{group.label}</p>
                     {/* Two columns that read across (Round | Pear, Oval | Emerald …) */}
-                    <ul className="grid grid-cols-2 gap-x-6 gap-y-0.5">
+                    <ul
+                      className={`grid grid-cols-2 gap-y-0.5 ${
+                        openMenuPanel.groups.length > 1 ? "gap-x-6" : "max-w-md gap-x-8"
+                      }`}
+                    >
                       {group.links.map((link) => (
                         <li key={link.to}>
                           <Link
@@ -209,8 +224,8 @@ export function SiteHeader() {
                 <figure className="hidden lg:block">
                   <div className="h-full w-full overflow-hidden">
                     <img
-                      src={shapePhoto(openMenuItem.menu.image.shape) ?? undefined}
-                      alt={openMenuItem.menu.image.alt}
+                      src={shapePhoto(openMenuPanel.image.shape) ?? undefined}
+                      alt={openMenuPanel.image.alt}
                       loading="lazy"
                       decoding="async"
                       className="h-full w-full object-cover object-center"
@@ -304,7 +319,7 @@ export function SiteHeader() {
                   navigate("/appointments");
                 }}
               >
-                Book an Appointment
+                Inquire Now
               </Button>
             </div>
           </nav>

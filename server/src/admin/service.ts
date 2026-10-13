@@ -30,7 +30,7 @@ export class AdminError extends Error {
   }
 }
 
-/** `Natural Oval 1.50ct VVS1` → `natural-oval-1-50ct-vvs1`. */
+/** `Lab-Grown Oval 1.50ct VVS1` → `lab-grown-oval-1-50ct-vvs1`. */
 function slugify(name: string): string {
   return name
     .toLowerCase()

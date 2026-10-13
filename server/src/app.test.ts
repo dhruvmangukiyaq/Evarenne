@@ -96,10 +96,10 @@ describe("GET /api/catalog", () => {
 describe("GET /api/products/:slugOrId", () => {
   it("returns a product by slug", async () => {
     const { status, body } = await getJson<{ product: { sku: string; specs: { certificateNumber: string | null } } }>(
-      `${base}/api/products/evn-rd-100`,
+      `${base}/api/products/evl-rd-100`,
     );
     expect(status).toBe(200);
-    expect(body.product.sku).toBe("EVN-RD-100");
+    expect(body.product.sku).toBe("EVL-RD-100");
     expect(body.product.specs.certificateNumber).toBeNull();
   });
 

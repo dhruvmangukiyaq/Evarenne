@@ -23,7 +23,8 @@ export type DiamondShape =
   | "marquise"
   | "heart";
 
-export type DiamondType = "natural" | "lab-grown";
+/** Lab-grown only — the natural line was removed from the catalogue. */
+export type DiamondType = "lab-grown";
 
 export type Category = "loose-diamond";
 

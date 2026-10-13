@@ -4,15 +4,14 @@ const columns: Array<{ heading: string; links: Array<{ label: string; to: string
   {
     heading: "Shop",
     links: [
-      { label: "Natural Diamonds", to: "/diamonds/natural" },
-      { label: "Lab-Grown Diamonds", to: "/diamonds/lab-grown" },
+      { label: "Lab-Grown Diamonds", to: "/diamonds" },
       { label: "Diamond Guide", to: "/diamond-guide" },
     ],
   },
   {
     heading: "Client Care",
     links: [
-      { label: "Book an Appointment", to: "/appointments" },
+      { label: "Inquire Now", to: "/appointments" },
       { label: "Contact", to: "/contact" },
       { label: "FAQ", to: "/faq" },
       { label: "Shipping & Returns", to: "/shipping-returns" },
@@ -44,7 +43,7 @@ export function SiteFooter() {
               </span>
             </p>
             <p className="mt-5 max-w-xs text-sm leading-relaxed text-ivory/80">
-              Natural and lab-grown diamonds — presented with clarity, so you can choose with
+              Lab-grown diamonds — presented with clarity, so you can choose with
               confidence.
             </p>
           </div>
