@@ -15,17 +15,6 @@ async function getJson<T = Record<string, unknown>>(
   return { status: res.status, body };
 }
 
-function postJson<T = Record<string, unknown>>(
-  url: string,
-  payload: unknown,
-): Promise<{ status: number; body: T }> {
-  return getJson<T>(url, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-}
-
 beforeAll(async () => {
   const app = createApp();
   await new Promise<void>((resolve) => {
@@ -70,10 +59,29 @@ describe("GET /api/catalog", () => {
     }
   });
 
+  it("applies polish/symmetry/fluorescence filters from the query string", async () => {
+    const { status, body } = await getJson<CatalogResult & { dataSource: string }>(
+      `${base}/api/catalog?polishes=Excellent&symmetries=Excellent&fluorescences=None`,
+    );
+    expect(status).toBe(200);
+    expect(body.items.length).toBeGreaterThan(0);
+    for (const item of body.items) {
+      expect(item.specs?.polish).toBe("Excellent");
+      expect(item.specs?.symmetry).toBe("Excellent");
+      expect(item.specs?.fluorescence).toBe("None");
+    }
+    expect(body.facets.polishes.length).toBeGreaterThan(0);
+  });
+
   it("rejects invalid enum values with 400", async () => {
     const { status, body } = await getJson<{ error: string }>(`${base}/api/catalog?shapes=triangle`);
     expect(status).toBe(400);
     expect(body.error).toBe("Invalid catalog query");
+  });
+
+  it("rejects an unknown polish grade with 400", async () => {
+    const { status } = await getJson(`${base}/api/catalog?polishes=Mirror`);
+    expect(status).toBe(400);
   });
 
   it("rejects contradictory ranges with 400", async () => {
@@ -109,60 +117,5 @@ describe("GET /api/search", () => {
   it("returns empty for blank queries", async () => {
     const { body } = await getJson<{ items: unknown[] }>(`${base}/api/search?q=`);
     expect(body.items).toHaveLength(0);
-  });
-});
-
-describe("POST /api/pricing/quote", () => {
-  it("prices a single product from the server catalog", async () => {
-    const { status, body } = await postJson<{ total: { amount: number; currency: string }; status: string }>(
-      `${base}/api/pricing/quote`,
-      { items: [{ productId: "evn-rd-100", quantity: 1 }] },
-    );
-    expect(status).toBe(200);
-    expect(body.total).toEqual({ amount: 620000, currency: "USD" });
-    expect(body.status).toBe("quote-only");
-  });
-
-  it("multiplies by quantity", async () => {
-    const { body } = await postJson<{ total: { amount: number } }>(`${base}/api/pricing/quote`, {
-      items: [{ productId: "evw-plain-pla", quantity: 2 }],
-    });
-    expect(body.total.amount).toBe(178000);
-  });
-
-  it("prices a configured ring as setting + diamond", async () => {
-    const { status, body } = await postJson<{ total: { amount: number } }>(`${base}/api/pricing/quote`, {
-      items: [{ settingId: "evs-sol-pla", diamondId: "evn-rd-100", quantity: 1 }],
-    });
-    expect(status).toBe(200);
-    // 125000 (setting) + 620000 (diamond)
-    expect(body.total.amount).toBe(745000);
-  });
-
-  it("rejects incompatible setting + diamond combinations", async () => {
-    // Bezel setting supports max 1.5ct; the 2ct lab oval exceeds it
-    const { status } = await postJson(`${base}/api/pricing/quote`, {
-      items: [{ settingId: "evs-bez-pla", diamondId: "evl-ov-200", quantity: 1 }],
-    });
-    expect(status).toBe(409);
-  });
-
-  it("rejects unknown products with 409", async () => {
-    const { status } = await postJson(`${base}/api/pricing/quote`, {
-      items: [{ productId: "not-a-product", quantity: 1 }],
-    });
-    expect(status).toBe(409);
-  });
-
-  it("rejects invalid payloads with 400", async () => {
-    const { status } = await postJson(`${base}/api/pricing/quote`, { items: [] });
-    expect(status).toBe(400);
-  });
-
-  it("rejects a line with neither productId nor a ring pair", async () => {
-    const { status } = await postJson(`${base}/api/pricing/quote`, {
-      items: [{ quantity: 1 }],
-    });
-    expect(status).toBe(400);
   });
 });

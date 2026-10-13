@@ -1,56 +1,53 @@
 import { useCallback, useMemo } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { useApi } from "../lib/useApi";
-import type { CatalogResponse, DiamondShape, Metal, RingStyle } from "../lib/api-types";
+import type { CatalogResponse, DiamondShape, FacetBucket } from "../lib/api-types";
 import { ProductCard } from "../components/catalog/ProductCard";
 import { DiamondArt } from "../components/catalog/ProductArt";
-import { metalLabel, styleLabel } from "../lib/labels";
+import { FilterBar } from "../components/catalog/FilterBar";
+import type { CheckFilter, FilterSpec, RangeFilter, ScaleFilter } from "../components/catalog/FilterBar";
 import { shapeLabel } from "../lib/labels";
 import { Breadcrumbs, EmptyState, ErrorState, Skeleton } from "../components/ui/Display";
 import type { Crumb } from "../components/ui/Display";
 import { Button } from "../components/ui/Button";
-import { Select } from "../components/ui/Form";
-import { Drawer } from "../components/ui/Overlay";
-import { useState } from "react";
+import { Reveal } from "../components/ui/Reveal";
 
 /**
- * Catalog page — one component powers /diamonds/:type, /engagement-rings,
- * /wedding-rings, /jewelry and /search. All filter/sort/page state lives in
- * the URL query string, so links are shareable and back/forward works.
+ * Catalog page — one component powers /diamonds/:type and /search. All
+ * filter/sort/page state lives in the URL query string, so links are
+ * shareable and back/forward works.
+ *
+ * Filters are a horizontal pill toolbar (each pill opens a dropdown panel)
+ * instead of a sidebar, mirroring the reference diamond storefront.
  */
 
 type ParamKey =
   | "shapes"
-  | "metals"
-  | "styles"
   | "cuts"
   | "colors"
   | "clarities"
-  | "priceMin"
-  | "priceMax"
+  | "polishes"
+  | "symmetries"
+  | "fluorescences"
   | "caratMin"
   | "caratMax"
   | "sort"
   | "page"
-  | "category"
   | "q";
 
 const SHAPE_ALL: DiamondShape[] = [
   "round", "oval", "princess", "emerald", "cushion", "pear", "radiant", "asscher", "marquise", "heart",
 ];
-const METAL_ALL: Metal[] = [
-  "platinum", "18k-white-gold", "14k-white-gold", "18k-yellow-gold", "14k-yellow-gold", "18k-rose-gold", "14k-rose-gold",
-];
-const STYLE_ALL: RingStyle[] = ["solitaire", "halo", "pavé", "hidden-halo", "three-stone", "vintage", "bezel"];
 const CUT_ALL = ["Excellent", "Very Good", "Good"];
 const COLOR_ALL = ["D", "E", "F", "G", "H", "I", "J"];
 const CLARITY_ALL = ["FL", "IF", "VVS1", "VVS2", "VS1", "VS2", "SI1", "SI2"];
+const POLISH_ALL = ["Excellent", "Very Good", "Good"];
+const SYMMETRY_ALL = ["Excellent", "Very Good", "Good"];
+const FLUORESCENCE_ALL = ["None", "Faint", "Medium", "Strong"];
 
 const SORT_CHOICES = [
   { value: "relevance", label: "Featured" },
-  { value: "price-asc", label: "Price: Low to High" },
-  { value: "price-desc", label: "Price: High to Low" },
   { value: "carat-asc", label: "Carat: Low to High" },
   { value: "carat-desc", label: "Carat: High to Low" },
   { value: "newest", label: "Newest" },
@@ -61,83 +58,58 @@ function csvList(params: URLSearchParams, key: ParamKey): string[] {
   return raw ? raw.split(",").filter(Boolean) : [];
 }
 
-interface FilterSectionProps {
-  legend: string;
-  children: React.ReactNode;
+/** Facet count for one value in one bucket list (undefined while loading). */
+function facetCount(buckets: FacetBucket[] | undefined, value: string): number | undefined {
+  return buckets?.find((bucket) => bucket.value === value)?.count;
 }
 
-function FilterSection({ legend, children }: FilterSectionProps) {
-  return (
-    <fieldset className="border-b border-ivory-dim py-5 last:border-b-0">
-      <legend className="mb-3 text-eyebrow text-ink">{legend}</legend>
-      <div className="flex flex-col gap-2">{children}</div>
-    </fieldset>
-  );
+/** Map a CSV selection back onto inclusive [low, high] indices of a grade scale. */
+function gradeSpan(grades: string[], selected: string[]): [number, number] {
+  const indices = selected
+    .map((value) => grades.indexOf(value))
+    .filter((index) => index >= 0);
+  if (indices.length === 0) return [0, grades.length - 1];
+  return [Math.min(...indices), Math.max(...indices)];
 }
 
-function FilterCheck({
-  label,
-  count,
-  checked,
-  onToggle,
-  icon,
-}: {
-  label: string;
-  count?: number;
-  checked: boolean;
-  onToggle: () => void;
-  /** Optional leading icon (shape filters render their cut glyph). */
-  icon?: React.ReactNode;
-}) {
-  return (
-    <label className="flex cursor-pointer items-center gap-2.5 text-sm text-ink">
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={onToggle}
-        className="h-4 w-4 accent-wine"
-      />
-      {icon}
-      <span className="flex-1">{label}</span>
-      {count !== undefined && <span className="text-xs text-ink-faint tabular-nums">{count}</span>}
-    </label>
-  );
+/** One per pill that holds any value (a slider range counts once). */
+function gradeActive(grades: string[], selected: string[]): number {
+  const [low, high] = gradeSpan(grades, selected);
+  return low > 0 || high < grades.length - 1 ? 1 : 0;
+}
+
+/** Evenly spaced, rounded stops for a numeric slider's tick row. */
+function scaleTicks(min: number, max: number, format: (value: number) => string): string[] {
+  if (max <= min) return [format(min)];
+  return [0, 0.25, 0.5, 0.75, 1].map((step) => format(min + (max - min) * step));
 }
 
 export function CatalogPage() {
   const { diamondType } = useParams<{ diamondType?: string }>();
   const [params, setParams] = useSearchParams();
-  const [filtersOpen, setFiltersOpen] = useState(false);
 
-  // Route → base scope
+  // Route → base scope: the diamonds routes are pinned to loose stones,
+  // search stays open across the catalog.
   const pathname = window.location.pathname;
   const isDiamondsRoute = pathname.startsWith("/diamonds/");
   const isSearchRoute = pathname === "/search";
 
-  const scopeCategory = useMemo(() => {
-    if (pathname === "/engagement-rings") return "engagement-ring";
-    if (pathname === "/wedding-rings") return "wedding-band";
-    if (isDiamondsRoute) return "loose-diamond";
-    const categoryParam = params.get("category");
-    if (pathname === "/jewelry" && categoryParam) return categoryParam;
-    if (pathname === "/jewelry") return undefined; // all jewelry categories
-    return undefined;
-  }, [pathname, params, isDiamondsRoute]);
+  const scopeCategory = useMemo(
+    () => (isDiamondsRoute ? "loose-diamond" : undefined),
+    [isDiamondsRoute],
+  );
 
-  const showDiamondFilters = isDiamondsRoute || pathname === "/engagement-rings";
-  const showMetalFilters = !isDiamondsRoute;
-  const showStyleFilters = pathname === "/engagement-rings" || pathname === "/wedding-rings";
-  const showCaratFilters = isDiamondsRoute || pathname === "/engagement-rings";
+  const showDiamondFilters = isDiamondsRoute || isSearchRoute;
+  const showCaratFilters = isDiamondsRoute || isSearchRoute;
 
   // Read filter state from URL
   const shapes = csvList(params, "shapes");
-  const metals = csvList(params, "metals");
-  const styles = csvList(params, "styles");
   const cuts = csvList(params, "cuts");
   const colors = csvList(params, "colors");
   const clarities = csvList(params, "clarities");
-  const priceMin = params.get("priceMin") ?? undefined;
-  const priceMax = params.get("priceMax") ?? undefined;
+  const polishes = csvList(params, "polishes");
+  const symmetries = csvList(params, "symmetries");
+  const fluorescences = csvList(params, "fluorescences");
   const caratMin = params.get("caratMin") ?? undefined;
   const caratMax = params.get("caratMax") ?? undefined;
   const sort = params.get("sort") ?? "relevance";
@@ -146,13 +118,12 @@ export function CatalogPage() {
 
   const activeCount =
     shapes.length +
-    metals.length +
-    styles.length +
-    cuts.length +
-    colors.length +
-    clarities.length +
-    (priceMin ? 1 : 0) +
-    (priceMax ? 1 : 0) +
+    gradeActive(COLOR_ALL, colors) +
+    gradeActive(CLARITY_ALL, clarities) +
+    gradeActive(CUT_ALL, cuts) +
+    gradeActive(POLISH_ALL, polishes) +
+    gradeActive(SYMMETRY_ALL, symmetries) +
+    gradeActive(FLUORESCENCE_ALL, fluorescences) +
     (caratMin ? 1 : 0) +
     (caratMax ? 1 : 0);
 
@@ -181,11 +152,24 @@ export function CatalogPage() {
   const clearAll = useCallback(() => {
     const next = new URLSearchParams();
     if (q) next.set("q", q);
-    if (isDiamondsRoute && diamondType) {
-      // keep route-derived type; nothing in query to keep
-    }
     setParams(next);
-  }, [q, isDiamondsRoute, diamondType, setParams]);
+  }, [q, setParams]);
+
+  /** Drop every value of one pill — range pills clear their min and max. */
+  const clearFilter = useCallback(
+    (key: string) => {
+      const next = new URLSearchParams(params);
+      if (key === "carat") {
+        next.delete("caratMin");
+        next.delete("caratMax");
+      } else {
+        next.delete(key);
+      }
+      next.delete("page");
+      setParams(next, { replace: false });
+    },
+    [params, setParams],
+  );
 
   // Build API params from URL state
   const apiParams = useMemo(() => {
@@ -194,20 +178,23 @@ export function CatalogPage() {
     if (scopeCategory) p.category = scopeCategory;
     if (q) p.q = q;
     if (shapes.length) p.shapes = shapes;
-    if (metals.length) p.metals = metals;
-    if (styles.length) p.styles = styles;
     if (cuts.length) p.cuts = cuts;
     if (colors.length) p.colors = colors;
     if (clarities.length) p.clarities = clarities;
-    if (priceMin) p.priceMin = priceMin;
-    if (priceMax) p.priceMax = priceMax;
+    if (polishes.length) p.polishes = polishes;
+    if (symmetries.length) p.symmetries = symmetries;
+    if (fluorescences.length) p.fluorescences = fluorescences;
     if (caratMin) p.caratMin = caratMin;
     if (caratMax) p.caratMax = caratMax;
     p.sort = sort;
     p.page = page;
     p.pageSize = 12;
     return p;
-  }, [isDiamondsRoute, diamondType, scopeCategory, q, shapes, metals, styles, cuts, colors, clarities, priceMin, priceMax, caratMin, caratMax, sort, page]);
+  }, [
+    isDiamondsRoute, diamondType, scopeCategory, q,
+    shapes, cuts, colors, clarities, polishes, symmetries, fluorescences,
+    caratMin, caratMax, sort, page,
+  ]);
 
   const { data, loading, error, refetch } = useApi<CatalogResponse>(
     (signal) => {
@@ -221,11 +208,8 @@ export function CatalogPage() {
   const pageTitle = useMemo(() => {
     if (isSearchRoute) return q ? `Search: “${q}”` : "Search";
     if (isDiamondsRoute) return diamondType === "lab-grown" ? "Lab-Grown Diamonds" : "Natural Diamonds";
-    if (pathname === "/engagement-rings") return "Engagement Rings";
-    if (pathname === "/wedding-rings") return "Wedding Rings";
-    if (pathname === "/jewelry") return "Fine Jewelry";
     return "Collection";
-  }, [isSearchRoute, isDiamondsRoute, diamondType, pathname, q]);
+  }, [isSearchRoute, isDiamondsRoute, diamondType, q]);
 
   const breadcrumbItems = useMemo<Crumb[]>(() => {
     const crumbs: Crumb[] = [{ label: "Home", to: "/" }];
@@ -233,312 +217,251 @@ export function CatalogPage() {
     else if (isDiamondsRoute) {
       crumbs.push({ label: "Diamonds" });
       crumbs.push({ label: diamondType === "lab-grown" ? "Lab-Grown" : "Natural" });
-    } else if (pathname === "/engagement-rings") crumbs.push({ label: "Engagement Rings" });
-    else if (pathname === "/wedding-rings") crumbs.push({ label: "Wedding Rings" });
-    else if (pathname === "/jewelry") crumbs.push({ label: "Fine Jewelry" });
+    }
     return crumbs;
-  }, [isSearchRoute, isDiamondsRoute, diamondType, pathname]);
+  }, [isSearchRoute, isDiamondsRoute, diamondType]);
 
-  const filterPanel = (
-    <div>
-      {activeCount > 0 && (
-        <div className="mb-4 flex items-center justify-between border-b border-ivory-dim pb-3">
-          <span className="text-sm text-ink-soft">{activeCount} filter{activeCount === 1 ? "" : "s"} applied</span>
-          <button
-            type="button"
-            onClick={clearAll}
-            className="font-sans text-sm font-medium text-wine underline-offset-4 hover:underline"
-          >
-            Clear all
-          </button>
-        </div>
-      )}
+  const facets = data?.facets;
 
-      {showDiamondFilters && (
-        <>
-          <FilterSection legend="Shape">
-            {SHAPE_ALL.map((shape) => {
-              const bucket = data?.facets.shapes.find((b) => b.value === shape);
-              return (
-                <FilterCheck
-                  key={shape}
-                  label={shapeLabel(shape)}
-                  count={bucket?.count ?? 0}
-                  checked={shapes.includes(shape)}
-                  onToggle={() => toggleMulti("shapes", shape)}
-                  icon={
-                    <DiamondArt
-                      shape={shape}
-                      framed={false}
-                      className="h-5 w-5 shrink-0"
-                      title=""
-                    />
-                  }
-                />
-              );
-            })}
-          </FilterSection>
+  const shapeFilter: CheckFilter = {
+    kind: "check",
+    key: "shapes",
+    label: "Shape",
+    selected: shapes,
+    options: SHAPE_ALL.map((shape) => ({
+      value: shape,
+      label: shapeLabel(shape),
+      count: facetCount(facets?.shapes, shape),
+      icon: <DiamondArt shape={shape} framed={false} className="h-5 w-5 shrink-0" title="" />,
+    })),
+  };
 
-          <FilterSection legend="Cut Grade">
-            {CUT_ALL.map((cut) => (
-              <FilterCheck
-                key={cut}
-                label={cut}
-                checked={cuts.includes(cut)}
-                onToggle={() => toggleMulti("cuts", cut)}
-              />
-            ))}
-          </FilterSection>
+  /** Ordered grade scales → dual-handle slider pills (reference storefront). */
+  const scaleFilter = (key: ParamKey, label: string, grades: string[], selected: string[]): ScaleFilter => {
+    const [low, high] = gradeSpan(grades, selected);
+    return {
+      kind: "scale",
+      key,
+      label,
+      grades,
+      minIdx: low,
+      maxIdx: high,
+      onRangeChange: (minIdx, maxIdx) =>
+        update(key, minIdx === 0 && maxIdx === grades.length - 1 ? null : grades.slice(minIdx, maxIdx + 1).join(",")),
+    };
+  };
 
-          <FilterSection legend="Color Grade">
-            {COLOR_ALL.map((color) => (
-              <FilterCheck
-                key={color}
-                label={color}
-                checked={colors.includes(color)}
-                onToggle={() => toggleMulti("colors", color)}
-              />
-            ))}
-          </FilterSection>
+  const colourFilter = scaleFilter("colors", "Colour", COLOR_ALL, colors);
+  const clarityFilter = scaleFilter("clarities", "Clarity", CLARITY_ALL, clarities);
+  const polishFilter = scaleFilter("polishes", "Polish", POLISH_ALL, polishes);
+  const symmetryFilter = scaleFilter("symmetries", "Symmetry", SYMMETRY_ALL, symmetries);
+  const fluorescenceFilter = scaleFilter("fluorescences", "Fluorescence", FLUORESCENCE_ALL, fluorescences);
+  const cutFilter = scaleFilter("cuts", "Cut", CUT_ALL, cuts);
 
-          <FilterSection legend="Clarity">
-            {CLARITY_ALL.map((clarity) => (
-              <FilterCheck
-                key={clarity}
-                label={clarity}
-                checked={clarities.includes(clarity)}
-                onToggle={() => toggleMulti("clarities", clarity)}
-              />
-            ))}
-          </FilterSection>
-        </>
-      )}
+  // Numeric sliders speak display units (carats); the URL keeps carat in
+  // carats, as the API expects.
+  const caratLo = facets?.caratMin != null ? Math.floor(facets.caratMin * 20) / 20 : 0;
+  const caratHi = facets?.caratMax != null ? Math.ceil(facets.caratMax * 20) / 20 : 5;
 
-      {showStyleFilters && (
-        <FilterSection legend="Style">
-          {STYLE_ALL.map((style) => (
-            <FilterCheck
-              key={style}
-              label={styleLabel(style)}
-              checked={styles.includes(style)}
-              onToggle={() => toggleMulti("styles", style)}
-            />
-          ))}
-        </FilterSection>
-      )}
+  const caratFilter: RangeFilter = {
+    kind: "range",
+    key: "carat",
+    label: "Carat",
+    min: caratMin,
+    max: caratMax,
+    slider: {
+      min: caratLo,
+      max: Math.max(caratHi, caratLo + 0.05),
+      step: 0.05,
+      ticks: scaleTicks(caratLo, Math.max(caratHi, caratLo + 0.05), (value) =>
+        `${(Math.round(value * 100) / 100).toFixed(2)}`,
+      ),
+    },
+    minLabel: "Minimum carat",
+    maxLabel: "Maximum carat",
+    format: (value) => `${(Math.round(value * 100) / 100).toFixed(2)} ct`,
+    onMinChange: (value) => update("caratMin", value),
+    onMaxChange: (value) => update("caratMax", value),
+  };
 
-      {showMetalFilters && (
-        <FilterSection legend="Metal">
-          {METAL_ALL.map((metal) => (
-            <FilterCheck
-              key={metal}
-              label={metalLabel(metal)}
-              checked={metals.includes(metal)}
-              onToggle={() => toggleMulti("metals", metal)}
-            />
-          ))}
-        </FilterSection>
-      )}
+  // Pill order mirrors the reference bar: SHAPE, COLOUR, CLARITY, CARAT,
+  // POLISH, SYMMETRY, FLUORESCENCE, CUT.
+  const filters: FilterSpec[] = [];
+  if (showDiamondFilters) filters.push(shapeFilter, colourFilter, clarityFilter);
+  if (showCaratFilters) filters.push(caratFilter);
+  if (showDiamondFilters) {
+    filters.push(polishFilter, symmetryFilter, fluorescenceFilter, cutFilter);
+  }
 
-      <FilterSection legend="Price (USD)">
-        <div className="flex items-center gap-2">
-          <input
-            type="number"
-            inputMode="numeric"
-            min={0}
-            placeholder="Min"
-            aria-label="Minimum price in dollars"
-            value={priceMin ? Math.round(Number(priceMin) / 100) : ""}
-            onChange={(event) => {
-              const dollars = Number(event.target.value);
-              update("priceMin", event.target.value ? String(Math.round(dollars * 100)) : null);
-            }}
-            className="h-10 w-full border border-ivory-dim bg-white px-2.5 text-sm focus:border-wine focus:outline-none"
-          />
-          <span aria-hidden="true" className="text-ink-faint">
-            –
-          </span>
-          <input
-            type="number"
-            inputMode="numeric"
-            min={0}
-            placeholder="Max"
-            aria-label="Maximum price in dollars"
-            value={priceMax ? Math.round(Number(priceMax) / 100) : ""}
-            onChange={(event) => {
-              const dollars = Number(event.target.value);
-              update("priceMax", event.target.value ? String(Math.round(dollars * 100)) : null);
-            }}
-            className="h-10 w-full border border-ivory-dim bg-white px-2.5 text-sm focus:border-wine focus:outline-none"
-          />
-        </div>
-      </FilterSection>
-
-      {showCaratFilters && (
-        <FilterSection legend="Carat">
-          <div className="flex items-center gap-2">
-            <input
-              type="number"
-              inputMode="decimal"
-              step="0.01"
-              min={0}
-              placeholder="Min"
-              aria-label="Minimum carat"
-              value={caratMin ?? ""}
-              onChange={(event) => update("caratMin", event.target.value || null)}
-              className="h-10 w-full border border-ivory-dim bg-white px-2.5 text-sm focus:border-wine focus:outline-none"
-            />
-            <span aria-hidden="true" className="text-ink-faint">
-              –
-            </span>
-            <input
-              type="number"
-              inputMode="decimal"
-              step="0.01"
-              min={0}
-              placeholder="Max"
-              aria-label="Maximum carat"
-              value={caratMax ?? ""}
-              onChange={(event) => update("caratMax", event.target.value || null)}
-              className="h-10 w-full border border-ivory-dim bg-white px-2.5 text-sm focus:border-wine focus:outline-none"
-            />
-          </div>
-        </FilterSection>
-      )}
-    </div>
-  );
+  const isNatural = diamondType !== "lab-grown";
+  // Sentence-case display type, generous padding: the reference toggle.
+  const segmentClass = (active: boolean) =>
+    `inline-flex h-[3.25rem] items-center rounded-[5px] border px-9 font-display text-base transition-colors ${
+      active
+        ? "border-olive bg-olive text-ivory"
+        : "border-charcoal/25 bg-white text-charcoal hover:border-olive hover:text-olive"
+    }`;
 
   return (
     <div className="mx-auto max-w-(--container-page) px-4 py-8 lg:px-8">
       <Breadcrumbs items={breadcrumbItems} className="mb-5" />
 
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="font-display text-h1 text-ink">{pageTitle}</h1>
-          {data && (
-            <p className="mt-1.5 text-sm text-ink-soft" aria-live="polite">
-              {loading ? "Loading…" : `${data.total} ${data.total === 1 ? "piece" : "pieces"}`}
-            </p>
-          )}
-        </div>
+      <Reveal delay={100} className="mb-6">
+        <h1 className="font-display text-h1 text-charcoal">{pageTitle}</h1>
+        {data && (
+          <p className="mt-1.5 text-sm text-charcoal-soft" aria-live="polite">
+            {loading ? "Loading…" : `${data.total} ${data.total === 1 ? "piece" : "pieces"}`}
+          </p>
+        )}
+      </Reveal>
 
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="sm" onClick={() => setFiltersOpen(true)} className="lg:hidden">
-            Filters{activeCount > 0 ? ` (${activeCount})` : ""}
-          </Button>
-          <div className="w-56">
-            <Select
-              label="Sort by"
-              options={SORT_CHOICES}
-              value={sort}
-              onChange={(event) => update("sort", event.target.value)}
-            />
+      <Reveal delay={200} className="mb-7">
+        {isDiamondsRoute && (
+          <div className="mb-6 flex justify-center">
+            <nav aria-label="Diamond type" className="flex flex-wrap justify-center gap-4">
+              <Link
+                to={{
+                  pathname: "/diamonds/natural",
+                  search: params.size ? `?${params.toString()}` : "",
+                }}
+                aria-current={isNatural ? "page" : undefined}
+                className={segmentClass(isNatural)}
+              >
+                Natural Diamond
+              </Link>
+              <Link
+                to={{
+                  pathname: "/diamonds/lab-grown",
+                  search: params.size ? `?${params.toString()}` : "",
+                }}
+                aria-current={!isNatural ? "page" : undefined}
+                className={segmentClass(!isNatural)}
+              >
+                Lab-Grown
+              </Link>
+            </nav>
           </div>
-        </div>
-      </div>
+        )}
 
-      {data && (
-        <p className="mb-4 border border-gold/40 bg-gold/10 px-3 py-2 text-xs text-gold-deep">
-          {data.notice}
-        </p>
-      )}
+        <FilterBar
+          filters={filters}
+          onToggle={(key, value) => toggleMulti(key as ParamKey, value)}
+          onClear={clearFilter}
+        />
 
-      <div className="flex gap-8">
-        <aside aria-label="Filters" className="hidden w-72 shrink-0 lg:block">
-          {filterPanel}
-        </aside>
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+          <div className="flex items-center gap-4 text-sm">
+            {activeCount > 0 && (
+              <>
+                <span className="text-charcoal-soft" aria-live="polite">
+                  {activeCount} filter{activeCount === 1 ? "" : "s"} applied
+                </span>
+                <button
+                  type="button"
+                  onClick={clearAll}
+                  className="font-sans text-sm font-medium text-olive underline-offset-4 hover:underline"
+                >
+                  Clear all
+                </button>
+              </>
+            )}
+          </div>
 
-        <div className="min-w-0 flex-1">
-          {loading && (
-            <div aria-busy="true" className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-              {Array.from({ length: 6 }).map((_, index) => (
-                <div key={index} className="border border-ivory-dim p-4">
-                  <Skeleton className="aspect-square w-full" />
-                  <Skeleton className="mt-4 h-5 w-3/4" />
-                  <Skeleton className="mt-2 h-4 w-1/2" />
-                </div>
-              ))}
-            </div>
-          )}
-
-          {error && (
-            <ErrorState
-              title="We couldn't load this collection"
-              description={error.message}
-              onRetry={refetch}
-            />
-          )}
-
-          {!loading && !error && data && data.items.length === 0 && (
-            <EmptyState
-              title="No pieces match your filters"
-              description="Try removing a filter or widening your price range."
-              action={
-                <Button variant="outline" onClick={clearAll}>
-                  Clear all filters
-                </Button>
-              }
-            />
-          )}
-
-          {!loading && !error && data && data.items.length > 0 && (
-            <>
-              <ul className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-                {data.items.map((product) => (
-                  <li key={product.id}>
-                    <ProductCard product={product} />
-                  </li>
+          <div className="ml-auto flex items-center gap-1.5 font-display text-sm text-charcoal-soft">
+            <span aria-hidden="true">Sort by</span>
+            <div className="relative inline-flex items-center">
+              <select
+                aria-label="Sort by"
+                value={sort}
+                onChange={(event) => update("sort", event.target.value)}
+                className="cursor-pointer appearance-none border-0 bg-transparent pr-5 font-display text-sm text-charcoal focus:outline-none"
+              >
+                {SORT_CHOICES.map((choice) => (
+                  <option key={choice.value} value={choice.value}>
+                    {choice.label}
+                  </option>
                 ))}
-              </ul>
-
-              {data.totalPages > 1 && (
-                <nav aria-label="Pagination" className="mt-10 flex items-center justify-center gap-3">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={data.page <= 1}
-                    onClick={() => update("page", String(data.page - 1), false)}
-                  >
-                    ← Previous
-                  </Button>
-                  <span className="text-sm text-ink-soft tabular-nums">
-                    Page {data.page} of {data.totalPages}
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={data.page >= data.totalPages}
-                    onClick={() => update("page", String(data.page + 1), false)}
-                  >
-                    Next →
-                  </Button>
-                </nav>
-              )}
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Mobile filter drawer */}
-      <Drawer
-        open={filtersOpen}
-        onClose={() => setFiltersOpen(false)}
-        title="Filters"
-        side="left"
-        widthClassName="w-full max-w-sm"
-        footer={
-          <div className="flex gap-3">
-            <Button variant="outline" fullWidth onClick={clearAll}>
-              Clear all
-            </Button>
-            <Button fullWidth onClick={() => setFiltersOpen(false)}>
-              Show {data?.total ?? 0} results
-            </Button>
+              </select>
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute right-0 text-charcoal-soft"
+              >
+                ⌄
+              </span>
+            </div>
           </div>
-        }
-      >
-        {filterPanel}
-      </Drawer>
+        </div>
+      </Reveal>
+
+      <Reveal delay={250}>
+        {loading && (
+          <div aria-busy="true" className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {Array.from({ length: 8 }).map((_, index) => (
+              <div key={index} className="border border-ivory-dim p-4">
+                <Skeleton className="aspect-square w-full" />
+                <Skeleton className="mt-4 h-5 w-3/4" />
+                <Skeleton className="mt-2 h-4 w-1/2" />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {error && (
+          <ErrorState
+            title="We couldn't load this collection"
+            description={error.message}
+            onRetry={refetch}
+          />
+        )}
+
+        {!loading && !error && data && data.items.length === 0 && (
+          <EmptyState
+            title="No pieces match your filters"
+            description="Try removing a filter or widening your carat range."
+            action={
+              <Button variant="outline" onClick={clearAll}>
+                Clear all filters
+              </Button>
+            }
+          />
+        )}
+
+        {!loading && !error && data && data.items.length > 0 && (
+          <>
+            <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {data.items.map((product, index) => (
+                <Reveal as="li" key={product.id} delay={(index % 4) * 100 + 100}>
+                  <ProductCard product={product} />
+                </Reveal>
+              ))}
+            </ul>
+
+            {data.totalPages > 1 && (
+              <nav aria-label="Pagination" className="mt-10 flex items-center justify-center gap-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={data.page <= 1}
+                  onClick={() => update("page", String(data.page - 1), false)}
+                >
+                  ← Previous
+                </Button>
+                <span className="text-sm text-charcoal-soft tabular-nums">
+                  Page {data.page} of {data.totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={data.page >= data.totalPages}
+                  onClick={() => update("page", String(data.page + 1), false)}
+                >
+                  Next →
+                </Button>
+              </nav>
+            )}
+          </>
+        )}
+      </Reveal>
     </div>
   );
 }

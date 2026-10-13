@@ -44,7 +44,7 @@ export function Dialog({ open, onClose, title, description, children, footer, si
           type="button"
           aria-label="Close dialog"
           onClick={onClose}
-          className="absolute inset-0 cursor-default bg-ink/50 backdrop-blur-[2px]"
+          className="absolute inset-0 cursor-default bg-charcoal/50 backdrop-blur-[2px]"
         />
         <div
           ref={containerRef}
@@ -57,11 +57,11 @@ export function Dialog({ open, onClose, title, description, children, footer, si
         >
           <div className="flex items-start justify-between gap-4 border-b border-ivory-dim px-6 py-5">
             <div>
-              <h2 id={titleId} className="font-display text-2xl text-ink">
+              <h2 id={titleId} className="font-display text-2xl text-charcoal">
                 {title}
               </h2>
               {description && (
-                <p id={descriptionId} className="mt-1 text-sm text-ink-soft">
+                <p id={descriptionId} className="mt-1 text-sm text-charcoal-soft">
                   {description}
                 </p>
               )}
@@ -70,7 +70,7 @@ export function Dialog({ open, onClose, title, description, children, footer, si
               type="button"
               onClick={onClose}
               aria-label="Close"
-              className="-mt-1 -mr-1 flex h-9 w-9 shrink-0 items-center justify-center text-xl text-ink-soft transition-colors hover:text-wine"
+              className="-mt-1 -mr-1 flex h-9 w-9 shrink-0 items-center justify-center text-xl text-charcoal-soft transition-colors hover:text-olive"
             >
               <span aria-hidden="true">×</span>
             </button>
@@ -124,7 +124,7 @@ export function Drawer({
           type="button"
           aria-label="Close panel"
           onClick={onClose}
-          className="absolute inset-0 cursor-default bg-ink/50 backdrop-blur-[2px]"
+          className="absolute inset-0 cursor-default bg-charcoal/50 backdrop-blur-[2px]"
         />
         <div
           ref={containerRef}
@@ -135,14 +135,14 @@ export function Drawer({
           className={`absolute top-0 bottom-0 ${sideClass} flex flex-col bg-ivory ${widthClassName}`}
         >
           <div className="flex items-center justify-between border-b border-ivory-dim px-5 py-4">
-            <h2 id={titleId} className="font-display text-xl text-ink">
+            <h2 id={titleId} className="font-display text-xl text-charcoal">
               {title}
             </h2>
             <button
               type="button"
               onClick={onClose}
               aria-label="Close"
-              className="flex h-9 w-9 items-center justify-center text-xl text-ink-soft transition-colors hover:text-wine"
+              className="flex h-9 w-9 items-center justify-center text-xl text-charcoal-soft transition-colors hover:text-olive"
             >
               <span aria-hidden="true">×</span>
             </button>

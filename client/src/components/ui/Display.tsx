@@ -1,16 +1,14 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { formatMoney, formatMoneyCompact } from "../../lib/money";
-import type { Money } from "../../lib/money";
 
 /* ---------------- Badge ---------------- */
 
-export type BadgeTone = "neutral" | "wine" | "gold" | "success" | "danger";
+export type BadgeTone = "neutral" | "olive" | "champagne" | "success" | "danger";
 
 const badgeTones: Record<BadgeTone, string> = {
-  neutral: "border-ivory-dim bg-ivory-deep text-ink-soft",
-  wine: "border-wine/20 bg-wine/10 text-wine",
-  gold: "border-gold/40 bg-gold/15 text-gold-deep",
+  neutral: "border-ivory-dim bg-ivory-deep text-charcoal-soft",
+  olive: "border-olive/20 bg-olive/10 text-olive",
+  champagne: "border-champagne/40 bg-champagne/15 text-champagne-deep",
   success: "border-success/25 bg-success-soft text-success",
   danger: "border-danger/25 bg-danger-soft text-danger",
 };
@@ -33,45 +31,6 @@ export function Badge({
   );
 }
 
-/* ---------------- PriceDisplay ---------------- */
-
-export interface PriceDisplayProps {
-  price: Money;
-  compareAt?: Money | null;
-  size?: "sm" | "md" | "lg";
-  compact?: boolean;
-  className?: string;
-}
-
-const priceSizes = {
-  sm: "text-sm",
-  md: "text-base",
-  lg: "text-2xl",
-} as const;
-
-export function PriceDisplay({
-  price,
-  compareAt,
-  size = "md",
-  compact = false,
-  className = "",
-}: PriceDisplayProps) {
-  const formatter = compact ? formatMoneyCompact : formatMoney;
-  const hasDiscount = compareAt != null && compareAt.amount > price.amount;
-
-  return (
-    <span className={`inline-flex items-baseline gap-2 font-sans ${priceSizes[size]} ${className}`}>
-      <span className="font-medium text-ink tabular-nums">{formatter(price)}</span>
-      {hasDiscount && (
-        <>
-          <s className="text-sm text-ink-faint tabular-nums">{formatter(compareAt)}</s>
-          <span className="sr-only">reduced from {formatter(compareAt)}</span>
-        </>
-      )}
-    </span>
-  );
-}
-
 /* ---------------- Breadcrumbs ---------------- */
 
 export interface Crumb {
@@ -82,22 +41,22 @@ export interface Crumb {
 export function Breadcrumbs({ items, className = "" }: { items: readonly Crumb[]; className?: string }) {
   return (
     <nav aria-label="Breadcrumb" className={className}>
-      <ol className="flex flex-wrap items-center gap-x-2 gap-y-1 font-sans text-xs text-ink-soft">
+      <ol className="flex flex-wrap items-center gap-x-2 gap-y-1 font-sans text-xs text-charcoal-soft">
         {items.map((item, index) => {
           const isLast = index === items.length - 1;
           return (
             <li key={`${item.label}-${index}`} className="flex items-center gap-2">
               {item.to && !isLast ? (
-                <Link to={item.to} className="underline-offset-4 transition-colors hover:text-wine hover:underline">
+                <Link to={item.to} className="underline-offset-4 transition-colors hover:text-olive hover:underline">
                   {item.label}
                 </Link>
               ) : (
-                <span aria-current={isLast ? "page" : undefined} className={isLast ? "text-ink" : undefined}>
+                <span aria-current={isLast ? "page" : undefined} className={isLast ? "text-charcoal" : undefined}>
                   {item.label}
                 </span>
               )}
               {!isLast && (
-                <span aria-hidden="true" className="text-ink-faint">
+                <span aria-hidden="true" className="text-charcoal-faint">
                   /
                 </span>
               )}
@@ -153,12 +112,12 @@ export function EmptyState({
       className={`flex flex-col items-center justify-center gap-3 border border-dashed border-ivory-dim bg-ivory-deep/40 px-6 py-14 text-center ${className}`}
     >
       {icon && (
-        <div aria-hidden="true" className="text-gold">
+        <div aria-hidden="true" className="text-champagne">
           {icon}
         </div>
       )}
-      <h3 className="font-display text-xl text-ink">{title}</h3>
-      {description && <p className="max-w-prose text-sm text-ink-soft">{description}</p>}
+      <h3 className="font-display text-xl text-charcoal">{title}</h3>
+      {description && <p className="max-w-prose text-sm text-charcoal-soft">{description}</p>}
       {action && <div className="mt-2">{action}</div>}
     </div>
   );
@@ -187,13 +146,13 @@ export function ErrorState({
       <span aria-hidden="true" className="text-lg text-danger">
         ⚠
       </span>
-      <h3 className="font-display text-xl text-ink">{title}</h3>
-      {description && <p className="max-w-prose text-sm text-ink-soft">{description}</p>}
+      <h3 className="font-display text-xl text-charcoal">{title}</h3>
+      {description && <p className="max-w-prose text-sm text-charcoal-soft">{description}</p>}
       {onRetry && (
         <button
           type="button"
           onClick={onRetry}
-          className="mt-1 border border-wine px-5 py-2 font-sans text-sm font-medium text-wine transition-colors hover:bg-wine hover:text-ivory"
+          className="mt-1 border border-olive px-5 py-2 font-sans text-sm font-medium text-olive hover:bg-olive hover:text-ivory anim-shrink"
         >
           {retryLabel}
         </button>

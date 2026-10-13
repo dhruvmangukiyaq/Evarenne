@@ -34,45 +34,19 @@ export const CLARITY_GRADES = ["FL", "IF", "VVS1", "VVS2", "VS1", "VS2", "SI1", 
 export type ClarityGrade = (typeof CLARITY_GRADES)[number];
 
 export const POLISH_GRADES = ["Excellent", "Very Good", "Good"] as const;
+export type PolishGrade = (typeof POLISH_GRADES)[number];
 export const SYMMETRY_GRADES = ["Excellent", "Very Good", "Good"] as const;
+export type SymmetryGrade = (typeof SYMMETRY_GRADES)[number];
 export const FLUORESCENCE_GRADES = ["None", "Faint", "Medium", "Strong"] as const;
+export type FluorescenceGrade = (typeof FLUORESCENCE_GRADES)[number];
 
 export const DIAMOND_TYPES = ["natural", "lab-grown"] as const;
 export type DiamondType = (typeof DIAMOND_TYPES)[number];
 
-export const METALS = [
-  "platinum",
-  "18k-white-gold",
-  "14k-white-gold",
-  "18k-yellow-gold",
-  "14k-yellow-gold",
-  "18k-rose-gold",
-  "14k-rose-gold",
-] as const;
-export type Metal = (typeof METALS)[number];
-
-export const RING_STYLES = [
-  "solitaire",
-  "halo",
-  "pavé",
-  "hidden-halo",
-  "three-stone",
-  "vintage",
-  "bezel",
-] as const;
-export type RingStyle = (typeof RING_STYLES)[number];
-
-export const CATEGORIES = [
-  "loose-diamond",
-  "engagement-ring",
-  "wedding-band",
-  "earrings",
-  "pendant",
-  "bracelet",
-] as const;
+export const CATEGORIES = ["loose-diamond"] as const;
 export type Category = (typeof CATEGORIES)[number];
 
-export const PRODUCT_KINDS = ["diamond", "setting", "ring", "jewelry"] as const;
+export const PRODUCT_KINDS = ["diamond"] as const;
 export type ProductKind = (typeof PRODUCT_KINDS)[number];
 
 export interface Money {
@@ -104,13 +78,6 @@ export interface ProductImage {
   alt: string;
 }
 
-export interface SettingCompatibility {
-  /** Center stone shapes this setting can hold. */
-  shapes: DiamondShape[];
-  caratMin: number;
-  caratMax: number;
-}
-
 export interface Product {
   id: string;
   slug: string;
@@ -122,22 +89,14 @@ export interface Product {
   price: Money;
   /** DEV SEED marker — replaces a real inventory flag when a real catalog exists. */
   dataSource: "development-seed";
-  /** Photography is not yet supplied; empty means the UI renders shape/category art. */
+  /** Photography is not yet supplied; empty means the UI renders shape art. */
   images: ProductImage[];
   createdAt: string;
 
-  // ---- Diamond facets (kind === "diamond") ----
+  // ---- Diamond facets ----
   diamondType?: DiamondType;
   shape?: DiamondShape;
   specs?: DiamondSpecs;
-
-  // ---- Jewelry / setting facets ----
-  metal?: Metal;
-  style?: RingStyle;
-  /** Center diamond embedded in a pre-configured ring (kind === "ring"). */
-  centerDiamond?: { shape: DiamondShape; type: DiamondType } & DiamondSpecs;
-  /** Present on settings: which center stones fit. */
-  compatibility?: SettingCompatibility;
 
   /** Featured on the homepage. Only used when explicitly true in data. */
   featured?: boolean;
@@ -162,8 +121,6 @@ export interface CatalogQuery {
   diamondType?: DiamondType;
   q?: string;
   shapes?: DiamondShape[];
-  metals?: Metal[];
-  styles?: RingStyle[];
   caratMin?: number;
   caratMax?: number;
   priceMin?: number;
@@ -171,6 +128,9 @@ export interface CatalogQuery {
   cuts?: CutGrade[];
   colors?: ColorGrade[];
   clarities?: ClarityGrade[];
+  polishes?: PolishGrade[];
+  symmetries?: SymmetryGrade[];
+  fluorescences?: FluorescenceGrade[];
   page?: number;
   pageSize?: number;
   sort?: SortOption;
@@ -193,11 +153,12 @@ export interface FacetBucket {
 
 export interface CatalogFacets {
   shapes: FacetBucket[];
-  metals: FacetBucket[];
-  styles: FacetBucket[];
   cuts: FacetBucket[];
   colors: FacetBucket[];
   clarities: FacetBucket[];
+  polishes: FacetBucket[];
+  symmetries: FacetBucket[];
+  fluorescences: FacetBucket[];
   priceMin: number | null;
   priceMax: number | null;
   caratMin: number | null;

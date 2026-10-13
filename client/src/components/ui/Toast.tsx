@@ -4,7 +4,7 @@ import { ToastContext, useToastState } from "./toast-context";
 import type { ToastTone } from "./toast-context";
 
 const toneStyles: Record<ToastTone, string> = {
-  info: "border-ivory-dim bg-ink text-ivory",
+  info: "border-ivory-dim bg-charcoal text-ivory",
   success: "border-success/40 bg-success text-white",
   error: "border-danger/40 bg-danger text-white",
 };

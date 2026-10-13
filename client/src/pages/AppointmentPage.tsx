@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Input, Select, Textarea, Checkbox } from "../components/ui/Form";
 import { Button } from "../components/ui/Button";
+import { Reveal } from "../components/ui/Reveal";
 import { useToast } from "../components/ui/toast-context";
 
 /**
@@ -94,40 +95,44 @@ export function AppointmentPage() {
   if (submitted) {
     return (
       <div className="mx-auto max-w-(--container-lg) px-4 py-20 lg:px-8">
-        <div className="mx-auto max-w-xl border border-ivory-dim bg-ivory-deep p-10 text-center">
-          <p className="text-eyebrow text-gold-deep">Request received</p>
-          <h1 className="mt-2 font-display text-h1 text-ink">Thank you, {state.name.split(" ")[0]}</h1>
-          <p className="mt-4 text-body-lg text-ink-soft">
-            Your consultation request has been noted. This preview isn't connected to a scheduling
-            system yet, so nothing is booked and you won't receive a confirmation email.
-          </p>
-          <p className="mt-3 text-sm text-ink-soft">
-            Once scheduling is connected, you'll receive a confirmation by email with the appointment
-            details and how to reschedule.
-          </p>
-          <Button
-            className="mt-8"
-            onClick={() => {
-              setSubmitted(false);
-              setState((s) => ({ ...s, name: "", email: "", phone: "", type: "", date: "", time: "", topic: "", notes: "", consent: false }));
-            }}
-          >
-            Submit another request
-          </Button>
-        </div>
+        <Reveal delay={100} variant="soft">
+          <div className="mx-auto max-w-xl border border-ivory-dim bg-ivory-deep p-10 text-center">
+            <p className="text-eyebrow text-champagne-deep">Request received</p>
+            <h1 className="mt-2 font-display text-h1 text-charcoal">Thank you, {state.name.split(" ")[0]}</h1>
+            <p className="mt-4 text-body-lg text-charcoal-soft">
+              Your consultation request has been noted. This preview isn't connected to a scheduling
+              system yet, so nothing is booked and you won't receive a confirmation email.
+            </p>
+            <p className="mt-3 text-sm text-charcoal-soft">
+              Once scheduling is connected, you'll receive a confirmation by email with the appointment
+              details and how to reschedule.
+            </p>
+            <Button
+              className="mt-8"
+              onClick={() => {
+                setSubmitted(false);
+                setState((s) => ({ ...s, name: "", email: "", phone: "", type: "", date: "", time: "", topic: "", notes: "", consent: false }));
+              }}
+            >
+              Submit another request
+            </Button>
+          </div>
+        </Reveal>
       </div>
     );
   }
 
   return (
     <div className="mx-auto max-w-(--container-lg) px-4 py-12 lg:px-8">
-      <p className="text-eyebrow text-gold-deep">Client care</p>
-      <h1 className="mt-2 font-display text-h1 text-ink">Book an Appointment</h1>
-      <p className="mt-4 max-w-2xl text-body-lg text-ink-soft">
-        Meet with a diamond specialist in person or over video. Tell us what you're looking for and
-        we'll prepare so your time is well spent. Submitting this form is a request — we'll confirm
-        the exact time with you directly.
-      </p>
+      <Reveal delay={100}>
+        <p className="text-eyebrow text-champagne-deep">Client care</p>
+        <h1 className="mt-2 font-display text-h1 text-charcoal">Book an Appointment</h1>
+        <p className="mt-4 max-w-2xl text-body-lg text-charcoal-soft">
+          Meet with a diamond specialist in person or over video. Tell us what you're looking for and
+          we'll prepare so your time is well spent. Submitting this form is a request — we'll confirm
+          the exact time with you directly.
+        </p>
+      </Reveal>
 
       <form onSubmit={onSubmit} noValidate className="mt-10 grid max-w-3xl gap-6 md:grid-cols-2">
         <Input
@@ -201,11 +206,10 @@ export function AppointmentPage() {
           onChange={(e) => update("topic", e.target.value)}
           error={errors.topic}
           options={[
-            { value: "engagement", label: "Engagement ring" },
             { value: "diamond", label: "Choosing a loose diamond" },
-            { value: "wedding", label: "Wedding rings" },
-            { value: "jewelry", label: "Fine jewelry" },
-            { value: "service", label: "Service or resizing" },
+            { value: "education", label: "Understanding the 4Cs" },
+            { value: "compare", label: "Comparing two stones" },
+            { value: "report", label: "Grading reports" },
             { value: "other", label: "Something else" },
           ]}
         />
@@ -240,7 +244,7 @@ export function AppointmentPage() {
           <Button type="submit" size="lg">
             Submit request
           </Button>
-          <p className="mt-3 text-xs text-ink-soft">
+          <p className="mt-3 text-xs text-charcoal-soft">
             This is a request, not a confirmed booking. We'll follow up to confirm the exact time. Your
             details aren't stored in this preview.
           </p>

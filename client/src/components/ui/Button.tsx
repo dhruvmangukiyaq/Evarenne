@@ -15,20 +15,23 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const base =
   "relative inline-flex items-center justify-center gap-2 font-sans font-medium " +
-  "transition-[background-color,color,border-color,box-shadow,transform] duration-150 ease-standard " +
   "disabled:pointer-events-none disabled:opacity-45 " +
-  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine";
+  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-olive";
 
+// Fill buttons carry `anim-shrink` — they press inward to 90% on hover/focus
+// (the reference site's button micro-interaction). Text buttons only recolour.
 const variants: Record<ButtonVariant, string> = {
   primary:
-    "bg-wine text-ivory border border-wine hover:bg-wine-hover active:bg-wine-active " +
-    "shadow-[0_1px_0_0_rgb(36_28_32/0.15)]",
+    "bg-olive text-ivory border border-olive hover:bg-olive-hover active:bg-olive-active " +
+    "shadow-[0_1px_0_0_rgb(38_40_33/0.15)] anim-shrink",
   secondary:
-    "bg-ink text-ivory border border-ink hover:bg-black active:bg-black",
+    "bg-charcoal text-ivory border border-charcoal hover:bg-black active:bg-black anim-shrink",
   outline:
-    "bg-transparent text-wine border border-wine hover:bg-wine hover:text-ivory active:bg-wine-active active:border-wine-active",
+    "bg-transparent text-olive border border-olive hover:bg-olive hover:text-ivory active:bg-olive-active active:border-olive-active " +
+    "anim-shrink",
   text:
-    "bg-transparent text-wine border border-transparent hover:text-wine-hover underline-offset-4 hover:underline p-0",
+    "bg-transparent text-olive border border-transparent hover:text-olive-hover underline-offset-4 hover:underline p-0 " +
+    "transition-colors duration-150 ease-standard",
 };
 
 const sizes: Record<ButtonSize, string> = {

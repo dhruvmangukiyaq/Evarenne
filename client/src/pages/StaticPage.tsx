@@ -1,4 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
+import { Reveal } from "../components/ui/Reveal";
 
 /**
  * Static content pages — single component, keyed by route.
@@ -28,18 +29,18 @@ const PAGES: Record<string, StaticPageDefinition> = {
     sections: [
       {
         heading: "What we stand for",
-        body: "Clarity in what you're buying, honesty about what we can and cannot verify, and jewellery made to be worn for decades. Every product page shows the exact specifications we hold for that piece — and nothing we don't.",
+        body: "Clarity in what we present, honesty about what we can and cannot verify, and jewellery made to be worn for decades. Every product page shows the exact specifications we hold for that piece — and nothing we don't.",
       },
       {
         heading: "Natural and lab-grown, side by side",
-        body: "We present both natural and lab-grown diamonds without steering you toward one. They differ in origin and typically in price; they do not differ in the way they're graded. Our guide explains the details.",
+        body: "We present both natural and lab-grown diamonds without steering you toward one. They differ in origin; they do not differ in the way they're graded. Our guide explains the details.",
       },
     ],
   },
   contact: {
     eyebrow: "Client care",
     title: "Contact Us",
-    intro: "Questions about a piece, a diamond, or an order? We're here to help.",
+    intro: "Questions about a piece, a diamond, or a collection? We're here to help.",
     pendingNotice:
       "Direct contact channels (email, phone, and showroom address) will be listed here once confirmed. For now, please use the appointment request form, which reaches the team directly.",
     sections: [],
@@ -49,11 +50,11 @@ const PAGES: Record<string, StaticPageDefinition> = {
     title: "Frequently Asked Questions",
     intro: "Straight answers to the questions we hear most often.",
     pendingNotice:
-      "The full FAQ is being drafted with the business owner so every answer reflects actual policy. It will cover orders, grading reports, care, and returns.",
+      "The full FAQ is being drafted with the business owner so every answer reflects actual policy. It will cover collections, grading reports, care, and viewing appointments.",
     sections: [
       {
-        heading: "Do you sell both natural and lab-grown diamonds?",
-        body: "Yes. Both are available as loose stones and in finished jewellery. Natural and lab-grown diamonds are chemically and optically the same material; they differ in origin, and typically in price.",
+        heading: "Do you show both natural and lab-grown diamonds?",
+        body: "Yes. Both are shown as loose stones and in finished jewellery. Natural and lab-grown diamonds are chemically and optically the same material; they differ in origin.",
       },
       {
         heading: "Are the diamonds certified?",
@@ -79,11 +80,11 @@ const PAGES: Record<string, StaticPageDefinition> = {
     title: "Privacy Policy",
     intro: "How your information is handled when you shop with Evarenne.",
     pendingNotice:
-      "The privacy policy is being prepared with legal review and will cover data collection, cookies, payment handling (via our payment provider), and your rights under applicable law.",
+      "The privacy policy is being prepared with legal review and will cover data collection, cookies, and your rights under applicable law.",
     sections: [
       {
         heading: "What we can say now",
-        body: "This site stores your shopping bag and wishlist locally in your browser. We do not store card numbers or payment credentials anywhere in this application — payments are handled by a dedicated payment provider once checkout is connected.",
+        body: "This site is a reference catalogue — it shows diamond specifications and stores no personal data. There is no account, no shopping bag, and no checkout. If you enquire about a piece, any details you send are used only to reply to you.",
       },
     ],
   },
@@ -94,23 +95,6 @@ const PAGES: Record<string, StaticPageDefinition> = {
     pendingNotice:
       "Full terms of service are in legal review and will be published before launch. This preview site is not an offer for sale; product data shown is sample data.",
     sections: [],
-  },
-  "ring-size-guide": {
-    eyebrow: "Guidance",
-    title: "Ring Size Guide",
-    intro: "How to find the right ring size — and why it matters more than you'd think.",
-    pendingNotice:
-      "A printable size chart and in-store measurement instructions are being prepared. In the meantime, our appointment consultation includes complimentary sizing.",
-    sections: [
-      {
-        heading: "Measuring at home",
-        body: "Wrap a strip of paper around the base of the intended finger, mark where it overlaps, and measure the length in millimetres. That measurement is the ring's inner circumference. Measure at the end of the day when fingers are at their largest, and avoid measuring when hands are cold.",
-      },
-      {
-        heading: "Wide bands run snug",
-        body: "Wider bands cover more of the finger and typically feel tighter at the same size. If you're choosing a band wider than about 6mm, consider going up half a size.",
-      },
-    ],
   },
 };
 
@@ -123,7 +107,7 @@ export function StaticPage() {
     return (
       <div className="mx-auto max-w-(--container-lg) px-4 py-16">
         <h1 className="font-display text-h1">Page not found</h1>
-        <Link to="/" className="mt-4 inline-block text-wine underline underline-offset-4">
+        <Link to="/" className="mt-4 inline-block text-olive underline underline-offset-4">
           Return home
         </Link>
       </div>
@@ -132,36 +116,47 @@ export function StaticPage() {
 
   return (
     <article className="mx-auto max-w-(--container-lg) px-4 py-12 lg:px-8">
-      <p className="text-eyebrow text-gold-deep">{page.eyebrow}</p>
-      <h1 className="mt-2 font-display text-h1 text-ink">{page.title}</h1>
-      <p className="mt-4 max-w-2xl text-body-lg text-ink-soft">{page.intro}</p>
+      <Reveal delay={100}>
+        <p className="text-eyebrow text-champagne-deep">{page.eyebrow}</p>
+        <h1 className="mt-2 font-display text-h1 text-charcoal">{page.title}</h1>
+      </Reveal>
+
+      <Reveal delay={250}>
+        <p className="mt-4 max-w-2xl text-body-lg text-charcoal-soft">{page.intro}</p>
+      </Reveal>
 
       {page.pendingNotice && (
-        <p className="mt-6 max-w-2xl border-l-2 border-gold bg-gold/10 px-4 py-3 text-sm text-ink">
-          <strong className="font-medium">In preparation: </strong>
-          {page.pendingNotice}
-        </p>
+        <Reveal delay={400} variant="fade">
+          <p className="mt-6 max-w-2xl border-l-2 border-champagne bg-champagne/10 px-4 py-3 text-sm text-charcoal">
+            <strong className="font-medium">In preparation: </strong>
+            {page.pendingNotice}
+          </p>
+        </Reveal>
       )}
 
       {page.sections && page.sections.length > 0 && (
         <div className="mt-10 flex max-w-2xl flex-col gap-8">
-          {page.sections.map((section) => (
-            <section key={section.heading}>
-              <h2 className="font-display text-h3 text-ink">{section.heading}</h2>
-              <p className="mt-2 leading-relaxed text-ink-soft">{section.body}</p>
-            </section>
+          {page.sections.map((section, index) => (
+            <Reveal key={section.heading} delay={500 + index * 100}>
+              <section>
+                <h2 className="font-display text-h3 text-charcoal">{section.heading}</h2>
+                <p className="mt-2 leading-relaxed text-charcoal-soft">{section.body}</p>
+              </section>
+            </Reveal>
           ))}
         </div>
       )}
 
-      <div className="mt-12 border-t border-ivory-dim pt-8">
-        <Link
-          to="/appointments"
-          className="inline-flex h-11 items-center bg-wine px-6 font-sans text-sm font-medium text-ivory transition-colors hover:bg-wine-hover"
-        >
-          Book an appointment
-        </Link>
-      </div>
+      <Reveal delay={400}>
+        <div className="mt-12 border-t border-ivory-dim pt-8">
+          <Link
+            to="/appointments"
+            className="inline-flex h-11 items-center bg-olive px-6 font-sans text-sm font-medium text-ivory hover:bg-olive-hover anim-shrink"
+          >
+            Book an appointment
+          </Link>
+        </div>
+      </Reveal>
     </article>
   );
 }

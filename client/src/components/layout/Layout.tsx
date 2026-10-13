@@ -16,13 +16,15 @@ function RouteAnnouncer() {
 
 export function Layout() {
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-olive">
       <a href="#main-content" className="skip-link">
         Skip to main content
       </a>
       <SiteHeader />
       <RouteAnnouncer />
-      <main id="main-content" tabIndex={-1} className="flex-1">
+      {/* The ivory sheet: every reading surface sits here so body copy can stay
+          charcoal (13.6:1). Full-bleed, matching the reference storefront. */}
+      <main id="main-content" tabIndex={-1} className="flex-1 bg-ivory">
         <Outlet />
       </main>
       <SiteFooter />

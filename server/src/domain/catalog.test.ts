@@ -28,7 +28,6 @@ describe("seed data integrity", () => {
     for (const product of products) {
       expect(product.specs?.certificateNumber ?? null).toBeNull();
       expect(product.specs?.lab ?? null).toBeNull();
-      expect(product.centerDiamond?.certificateNumber ?? null).toBeNull();
     }
   });
 
@@ -37,30 +36,39 @@ describe("seed data integrity", () => {
       expect(product.dataSource).toBe("development-seed");
     }
   });
+
+  it("carries only loose diamonds — no rings, settings or jewelry", () => {
+    expect(products.length).toBeGreaterThan(0);
+    for (const product of products) {
+      expect(product.kind).toBe("diamond");
+      expect(product.category).toBe("loose-diamond");
+    }
+  });
 });
 
 describe("queryCatalog — scoping", () => {
-  it("scopes to natural diamonds (loose + rings), excluding settings and jewelry", () => {
+  it("scopes to natural diamonds", () => {
     const result = queryCatalog(products, { diamondType: "natural", pageSize: 100 });
     expect(result.items.length).toBeGreaterThan(0);
     for (const p of result.items) {
-      const type = p.kind === "diamond" ? p.diamondType : p.centerDiamond?.type;
-      expect(type).toBe("natural");
+      expect(p.kind).toBe("diamond");
+      expect(p.diamondType).toBe("natural");
     }
-    expect(result.items.every((p) => p.kind !== "setting")).toBe(true);
   });
 
-  it("scopes to lab-grown diamonds (loose + rings)", () => {
+  it("scopes to lab-grown diamonds", () => {
     const result = queryCatalog(products, { diamondType: "lab-grown", pageSize: 100 });
+    expect(result.items.length).toBeGreaterThan(0);
     for (const p of result.items) {
-      const type = p.kind === "diamond" ? p.diamondType : p.centerDiamond?.type;
-      expect(type).toBe("lab-grown");
+      expect(p.kind).toBe("diamond");
+      expect(p.diamondType).toBe("lab-grown");
     }
   });
 
   it("scopes to a category", () => {
-    const result = queryCatalog(products, { category: "wedding-band", pageSize: 100 });
-    expect(result.items.every((p) => p.category === "wedding-band")).toBe(true);
+    const result = queryCatalog(products, { category: "loose-diamond", pageSize: 100 });
+    expect(result.items.length).toBeGreaterThan(0);
+    expect(result.items.every((p) => p.category === "loose-diamond")).toBe(true);
   });
 
   it("returns total matching the filtered set, not the page", () => {
@@ -115,24 +123,43 @@ describe("queryCatalog — filters combine with AND", () => {
     }
   });
 
-  it("filters jewelry by metal and style", () => {
+  it("filters by polish, symmetry and fluorescence", () => {
     const result = queryCatalog(products, {
-      category: "wedding-band",
-      metals: ["platinum"],
-      styles: ["pavé"],
+      polishes: ["Excellent"],
+      symmetries: ["Excellent", "Very Good"],
+      fluorescences: ["None", "Faint"],
       pageSize: 100,
     });
+    expect(result.items.length).toBeGreaterThan(0);
     for (const item of result.items) {
-      expect(item.metal).toBe("platinum");
-      expect(item.style).toBe("pavé");
+      expect(item.specs?.polish).toBe("Excellent");
+      expect(["Excellent", "Very Good"]).toContain(item.specs?.symmetry);
+      expect(["None", "Faint"]).toContain(item.specs?.fluorescence);
+    }
+  });
+
+  it("combines shape + carat range", () => {
+    const result = queryCatalog(products, {
+      diamondType: "lab-grown",
+      shapes: ["round"],
+      caratMax: 1.5,
+      pageSize: 100,
+    });
+    expect(result.items.length).toBeGreaterThan(0);
+    for (const item of result.items) {
+      expect(item.shape).toBe("round");
+      expect(item.specs?.carat).toBeLessThanOrEqual(1.5);
     }
   });
 });
 
 describe("queryCatalog — search", () => {
   it("matches by name", () => {
-    const result = queryCatalog(products, { q: "solitaire", pageSize: 100 });
+    const result = queryCatalog(products, { q: "emerald", pageSize: 100 });
     expect(result.items.length).toBeGreaterThan(0);
+    for (const item of result.items) {
+      expect(item.name.toLowerCase()).toContain("emerald");
+    }
   });
 
   it("matches by SKU exactly and ranks it first", () => {
@@ -209,9 +236,22 @@ describe("queryCatalog — facets", () => {
     expect(result.facets.caratMin).toBeGreaterThan(0);
   });
 
+  it("buckets polish, symmetry and fluorescence", () => {
+    const result = queryCatalog(products, { category: "loose-diamond", pageSize: 1 });
+    const polishTotal = result.facets.polishes.reduce((sum, b) => sum + b.count, 0);
+    const symmetryTotal = result.facets.symmetries.reduce((sum, b) => sum + b.count, 0);
+    const fluorescenceTotal = result.facets.fluorescences.reduce((sum, b) => sum + b.count, 0);
+    expect(polishTotal).toBe(result.total);
+    expect(symmetryTotal).toBe(result.total);
+    expect(fluorescenceTotal).toBe(result.total);
+  });
+
   it("returns empty facets and null ranges for empty scopes", () => {
     const result = queryCatalog(products, { q: "zzz-no-such-stone" });
     expect(result.facets.shapes).toHaveLength(0);
+    expect(result.facets.polishes).toHaveLength(0);
+    expect(result.facets.symmetries).toHaveLength(0);
+    expect(result.facets.fluorescences).toHaveLength(0);
     expect(result.facets.priceMin).toBeNull();
     expect(result.facets.caratMax).toBeNull();
   });

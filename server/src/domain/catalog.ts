@@ -7,62 +7,64 @@ const MAX_PAGE_SIZE = 48;
 function searchText(product: Product): string {
   const parts = [product.name, product.sku, product.id, product.description];
   if (product.shape) parts.push(product.shape);
-  if (product.metal) parts.push(product.metal);
-  if (product.style) parts.push(product.style);
   if (product.diamondType) parts.push(product.diamondType);
   return parts.join(" ").toLowerCase();
 }
 
-function matchesQuery(product: Product, query: CatalogQuery): boolean {
+function matchesQuery(product: Product, query: CatalogQuery, omitRange = false): boolean {
   if (query.category && product.category !== query.category) return false;
   if (query.diamondType) {
-    // Diamond-type scope: loose diamonds and pre-configured rings match by
-    // their diamond data. Settings and non-diamond jewelry are excluded —
-    // a setting has no diamond until the buyer chooses one.
-    const productType =
-      product.kind === "diamond"
-        ? product.diamondType
-        : product.centerDiamond
-          ? product.centerDiamond.type
-          : undefined;
-    if (productType !== query.diamondType) return false;
+    // Diamond-type scope: only a loose diamond carries the type directly.
+    // Anything that is not a loose diamond is out of scope for this filter.
+    if (product.kind !== "diamond" || product.diamondType !== query.diamondType) return false;
   }
   if (query.q) {
     const needle = query.q.trim().toLowerCase();
     if (needle && !searchText(product).includes(needle)) return false;
   }
   if (query.shapes?.length) {
-    const shape = product.shape ?? product.centerDiamond?.shape;
+    const shape = product.shape;
     if (!shape || !query.shapes.includes(shape)) return false;
   }
-  if (query.metals?.length) {
-    if (!product.metal || !query.metals.includes(product.metal)) return false;
-  }
-  if (query.styles?.length) {
-    if (!product.style || !query.styles.includes(product.style)) return false;
-  }
   if (query.cuts?.length) {
-    const cut = product.specs?.cut ?? product.centerDiamond?.cut;
+    const cut = product.specs?.cut;
     if (!cut || !query.cuts.includes(cut)) return false;
   }
   if (query.colors?.length) {
-    const color = product.specs?.color ?? product.centerDiamond?.color;
+    const color = product.specs?.color;
     if (!color || !query.colors.includes(color)) return false;
   }
   if (query.clarities?.length) {
-    const clarity = product.specs?.clarity ?? product.centerDiamond?.clarity;
+    const clarity = product.specs?.clarity;
     if (!clarity || !query.clarities.includes(clarity)) return false;
   }
-  if (query.caratMin !== undefined) {
-    const carat = product.specs?.carat ?? product.centerDiamond?.carat;
-    if (carat === undefined || carat < query.caratMin) return false;
+  if (query.polishes?.length) {
+    const polish = product.specs?.polish;
+    if (!polish || !query.polishes.includes(polish)) return false;
   }
-  if (query.caratMax !== undefined) {
-    const carat = product.specs?.carat ?? product.centerDiamond?.carat;
-    if (carat === undefined || carat > query.caratMax) return false;
+  if (query.symmetries?.length) {
+    const symmetry = product.specs?.symmetry;
+    if (!symmetry || !query.symmetries.includes(symmetry)) return false;
   }
-  if (query.priceMin !== undefined && product.price.amount < query.priceMin) return false;
-  if (query.priceMax !== undefined && product.price.amount > query.priceMax) return false;
+  if (query.fluorescences?.length) {
+    const fluorescence = product.specs?.fluorescence;
+    if (!fluorescence || !query.fluorescences.includes(fluorescence)) return false;
+  }
+  // `omitRange` skips the numeric range dimensions, so the price/carat facet
+  // bounds describe the whole scope instead of collapsing onto the user's
+  // current range (which would freeze a range slider inside itself).
+  if (!omitRange) {
+    if (query.caratMin !== undefined) {
+      const carat = product.specs?.carat;
+      if (carat === undefined || carat < query.caratMin) return false;
+    }
+    if (query.caratMax !== undefined) {
+      const carat = product.specs?.carat;
+      if (carat === undefined || carat > query.caratMax) return false;
+    }
+    if (query.priceMin !== undefined && product.price.amount < query.priceMin) return false;
+    if (query.priceMax !== undefined && product.price.amount > query.priceMax) return false;
+  }
   return true;
 }
 
@@ -93,17 +95,23 @@ function rangeOf(items: Product[], pick: (p: Product) => number | undefined): {
   return { min, max };
 }
 
-function computeFacets(scoped: Product[]): CatalogFacets {
-  const price = rangeOf(scoped, (p) => p.price.amount);
-  const carat = rangeOf(scoped, (p) => p.specs?.carat ?? p.centerDiamond?.carat);
+/**
+ * Facet buckets come from the filtered set; the price/carat bounds come from
+ * `rangeScope` (the same set with the numeric filters dropped) so a range
+ * slider can always travel the full scope.
+ */
+function computeFacets(scoped: Product[], rangeScope: Product[] = scoped): CatalogFacets {
+  const price = rangeOf(rangeScope, (p) => p.price.amount);
+  const carat = rangeOf(rangeScope, (p) => p.specs?.carat);
 
   return {
-    shapes: bucketize(scoped, (p) => p.shape ?? p.centerDiamond?.shape),
-    metals: bucketize(scoped, (p) => p.metal),
-    styles: bucketize(scoped, (p) => p.style),
-    cuts: bucketize(scoped, (p) => p.specs?.cut ?? p.centerDiamond?.cut),
-    colors: bucketize(scoped, (p) => p.specs?.color ?? p.centerDiamond?.color),
-    clarities: bucketize(scoped, (p) => p.specs?.clarity ?? p.centerDiamond?.clarity),
+    shapes: bucketize(scoped, (p) => p.shape),
+    cuts: bucketize(scoped, (p) => p.specs?.cut),
+    colors: bucketize(scoped, (p) => p.specs?.color),
+    clarities: bucketize(scoped, (p) => p.specs?.clarity),
+    polishes: bucketize(scoped, (p) => p.specs?.polish),
+    symmetries: bucketize(scoped, (p) => p.specs?.symmetry),
+    fluorescences: bucketize(scoped, (p) => p.specs?.fluorescence),
     priceMin: price.min,
     priceMax: price.max,
     caratMin: carat.min,
@@ -123,15 +131,15 @@ function sortItems(items: Product[], sort: CatalogQuery["sort"], q?: string): Pr
     case "carat-asc":
       sorted.sort(
         (a, b) =>
-          (a.specs?.carat ?? a.centerDiamond?.carat ?? Infinity) -
-          (b.specs?.carat ?? b.centerDiamond?.carat ?? Infinity),
+          (a.specs?.carat ?? Infinity) -
+          (b.specs?.carat ?? Infinity),
       );
       break;
     case "carat-desc":
       sorted.sort(
         (a, b) =>
-          (b.specs?.carat ?? b.centerDiamond?.carat ?? -Infinity) -
-          (a.specs?.carat ?? a.centerDiamond?.carat ?? -Infinity),
+          (b.specs?.carat ?? -Infinity) -
+          (a.specs?.carat ?? -Infinity),
       );
       break;
     case "newest":
@@ -167,8 +175,10 @@ export function queryCatalog(products: readonly Product[], query: CatalogQuery):
   const filtered = products.filter((product) => matchesQuery(product, query));
 
   // Facets are computed on the filtered set minus the facet's own dimension,
-  // so counts stay meaningful (standard e-commerce behaviour).
-  const facets = computeFacets(filtered);
+  // so counts stay meaningful (standard e-commerce behaviour). Price/carat
+  // bounds additionally ignore the numeric filters, keeping range sliders free.
+  const rangeScope = products.filter((product) => matchesQuery(product, query, true));
+  const facets = computeFacets(filtered, rangeScope);
 
   const pageSize = Math.min(Math.max(1, query.pageSize ?? DEFAULT_PAGE_SIZE), MAX_PAGE_SIZE);
   const sorted = sortItems(filtered, query.sort ?? "relevance", query.q);

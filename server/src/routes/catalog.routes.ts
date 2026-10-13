@@ -59,7 +59,6 @@ catalogRouter.get("/home", (_req, res) => {
     featured,
     counts: {
       diamonds: SEED_PRODUCTS.filter((p) => p.kind === "diamond").length,
-      settings: SEED_PRODUCTS.filter((p) => p.kind === "setting").length,
     },
     ...datasetMeta,
   });

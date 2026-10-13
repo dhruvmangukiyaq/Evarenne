@@ -1,20 +1,14 @@
 import { Suspense, lazy } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Layout } from "./components/layout/Layout";
-import { CartProvider, WishlistProvider } from "./store/commerce";
 import { ToastProvider } from "./components/ui/Toast";
 import { HomePage } from "./pages/HomePage";
 import { CatalogPage } from "./pages/CatalogPage";
 import { ProductDetailPage } from "./pages/ProductDetailPage";
-import { CartPage } from "./pages/CartPage";
-import { WishlistPage } from "./pages/WishlistPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { Skeleton } from "./components/ui/Display";
 
 // Route-level code splitting for the heavier, less-visited pages
-const RingBuilderPage = lazy(() =>
-  import("./pages/RingBuilderPage").then((m) => ({ default: m.RingBuilderPage })),
-);
 const EducationPage = lazy(() =>
   import("./pages/EducationPage").then((m) => ({ default: m.EducationPage })),
 );
@@ -40,35 +34,18 @@ export default function App() {
   return (
     <BrowserRouter>
       <ToastProvider>
-        <WishlistProvider>
-          <CartProvider>
-            <Routes>
-              <Route element={<Layout />}>
-                <Route index element={<HomePage />} />
+        <Routes>
+          <Route element={<Layout />}>
+            <Route index element={<HomePage />} />
 
-                {/* Catalog routes */}
-                <Route path="diamonds/:diamondType" element={<CatalogPage />} />
-                <Route path="engagement-rings" element={<CatalogPage />} />
-                <Route path="wedding-rings" element={<CatalogPage />} />
-                <Route path="jewelry" element={<CatalogPage />} />
-                <Route path="search" element={<CatalogPage />} />
+            {/* Catalog routes */}
+            <Route path="diamonds/:diamondType" element={<CatalogPage />} />
+            <Route path="search" element={<CatalogPage />} />
 
-                {/* Product detail */}
-                <Route path="products/:slugOrId" element={<ProductDetailPage />} />
+            {/* Product detail */}
+            <Route path="products/:slugOrId" element={<ProductDetailPage />} />
 
-                {/* Commerce */}
-                <Route path="cart" element={<CartPage />} />
-                <Route path="wishlist" element={<WishlistPage />} />
-                <Route
-                  path="create-your-ring"
-                  element={
-                    <Suspense fallback={<PageFallback />}>
-                      <RingBuilderPage />
-                    </Suspense>
-                  }
-                />
-
-                {/* Education */}
+            {/* Education */}
                 <Route
                   path="diamond-guide"
                   element={
@@ -82,14 +59,6 @@ export default function App() {
                   element={
                     <Suspense fallback={<PageFallback />}>
                       <EducationPage />
-                    </Suspense>
-                  }
-                />
-                <Route
-                  path="ring-size-guide"
-                  element={
-                    <Suspense fallback={<PageFallback />}>
-                      <StaticPage key="ring-size" />
                     </Suspense>
                   }
                 />
@@ -153,10 +122,8 @@ export default function App() {
                 />
 
                 <Route path="*" element={<NotFoundPage />} />
-              </Route>
-            </Routes>
-          </CartProvider>
-        </WishlistProvider>
+          </Route>
+        </Routes>
       </ToastProvider>
     </BrowserRouter>
   );

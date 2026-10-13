@@ -4,32 +4,59 @@
  * EVARENNE DESIGN TOKENS
  * Single source of truth for the brand palette, typography, spacing, and elevation.
  * Brand palette (required):
- *   Wine #541F32 · Muted Gold #C4A36B · Ivory #F8F4EF · Ink #241C20
+ *   Olive #606B45 · Champagne #C7AD7A · Ivory #F7F4EC · Charcoal #262821
+ *
+ * ── Composition (why the palette is layered this way) ──────────────────────
+ *   Olive    = the GROUND.  body, header, inter-section bands, gutters.
+ *   Ivory    = the SHEET.   <main> + footer float on that ground so every
+ *                           reading surface keeps charcoal text.
+ *   Charcoal = the INK.     all body copy — but only ever on ivory/champagne,
+ *                           never on olive (see contrast note below).
+ *   Champagne= the ACCENT.  ribbon, rules, borders, hover flourishes.
+ *
+ * This is required, not stylistic: Charcoal on Olive is 2.6:1 and fails WCAG
+ * outright, so charcoal text must sit on a light sheet. Layering an ivory sheet
+ * over an olive ground is what makes "olive background + charcoal text" work.
  *
  * Contrast notes (computed, WCAG 2.1 relative luminance):
- *   Wine  on Ivory ......... 11.8:1 (AAA body)      Ivory on Wine ....... 12.9:1 (AAA)
- *   Ink   on Ivory ......... 15.3:1 (AAA body)      Ivory on Ink ........ 15.3:1 (AAA)
- *   Gold  #C4A36B on Ivory .. 2.2:1  → DECORATIVE ONLY (rules, borders, large display accents).
- *   Gold-deep #7A5A24 on Ivory 5.9:1 → the only gold approved for small text on ivory.
- * Never use --color-gold for small body text on ivory; use --color-gold-deep.
+ *   Charcoal on Ivory ....... 13.6:1 (AAA body)   Ivory on Charcoal .... 13.6:1 (AAA)
+ *   Charcoal on Champagne ... 6.9:1  (AA body)    Champagne on Charcoal  6.9:1  (AA)
+ *   Olive     on Ivory ...... 5.2:1  (AA body)    Ivory on Olive ........ 5.2:1  (AA body)
+ *   Olive-hover #4F5938 on Ivory 6.8:1 · Olive-active #3F4730 8.9:1 (button states)
+ *   Champagne #C7AD7A on Ivory .. 2.0:1 · on Olive .. 2.6:1 → DECORATIVE ONLY
+ *                                    (rules, borders, large display accents).
+ *   Champagne-deep #8A6B33 on Ivory 4.5:1 → the only champagne approved for small text on ivory.
+ * Never use --color-champagne for small body text on ivory; use --color-champagne-deep.
+ * Never set small text in charcoal on --color-olive; use --color-ivory.
+ *
+ * Focus indicator uses a two-tone ring (ivory core + charcoal halo) so it clears
+ * 3:1 against BOTH the olive ground and the ivory sheet.
  */
 
 @theme {
   /* ---- Brand palette ---- */
-  --color-wine: #541f32;
-  --color-wine-hover: #451828;
-  --color-wine-active: #37131f;
-  --color-wine-soft: #6d3247;
-  --color-gold: #c4a36b;
-  --color-gold-deep: #7a5a24;
-  --color-gold-soft: #e8dcc4;
-  --color-ivory: #f8f4ef;
-  --color-ivory-deep: #efe8de;
-  --color-ivory-dim: #e4dbcd;
-  --color-ink: #241c20;
-  --color-ink-soft: #5a5054;
-  --color-ink-faint: #8b8185;
+  --color-olive: #606b45;
+  --color-olive-hover: #4f5938;
+  --color-olive-active: #3f4730;
+  --color-champagne: #c7ad7a;
+  --color-champagne-deep: #8a6b33;
+  --color-ivory: #f7f4ec;
+  --color-ivory-deep: #f0eadf;
+  --color-ivory-dim: #e2d9c6;
+  --color-charcoal: #262821;
+  --color-charcoal-soft: #54564b;
+  --color-charcoal-faint: #83857a;
   --color-white: #ffffff;
+
+  /* ---- Mega-menu surface (warm greige panel under the Diamond nav item) ----
+   * Contrast notes (same method as above):
+   *   Charcoal on Sand #e5dccb ...... 11.9:1 (AAA body)
+   *   Ivory on Taupe #6e6a55 ........ 5.0:1  (AA body) — the only greige approved
+   *                                          for text-bearing buttons.
+   */
+  --color-sand: #e5dccb;
+  --color-taupe: #6e6a55;
+  --color-taupe-hover: #5c5947;
 
   /* ---- Semantic feedback (never color-only: always paired with text/icons) ---- */
   --color-danger: #8c2f2f;
@@ -100,11 +127,11 @@
   --radius-pill: 999px;
 
   /* ---- Elevation: soft, warm-tinted shadows ---- */
-  --shadow-hairline: 0 1px 0 0 rgb(36 28 32 / 0.08);
-  --shadow-card: 0 2px 14px -4px rgb(36 28 32 / 0.12);
-  --shadow-card-hover: 0 12px 32px -12px rgb(36 28 32 / 0.22);
-  --shadow-drawer: -18px 0 48px -24px rgb(36 28 32 / 0.35);
-  --shadow-overlay: 0 24px 72px -24px rgb(36 28 32 / 0.4);
+  --shadow-hairline: 0 1px 0 0 rgb(38 40 33 / 0.08);
+  --shadow-card: 0 2px 14px -4px rgb(38 40 33 / 0.12);
+  --shadow-card-hover: 0 12px 32px -12px rgb(38 40 33 / 0.22);
+  --shadow-drawer: -18px 0 48px -24px rgb(38 40 33 / 0.35);
+  --shadow-overlay: 0 24px 72px -24px rgb(38 40 33 / 0.4);
 
   /* ---- Layout ---- */
   --container-3xs: 16rem;
@@ -148,8 +175,11 @@
   }
 
   body {
-    background-color: var(--color-ivory);
-    color: var(--color-ink);
+    /* Olive is the page ground — the ivory <main> sheet floats on it. */
+    background-color: var(--color-olive);
+    /* Ink stays charcoal; text living directly on the olive ground (header,
+       skip-link) opts into --color-ivory explicitly. */
+    color: var(--color-charcoal);
     font-family: var(--font-sans);
     font-size: var(--text-body);
     line-height: var(--text-body--line-height);
@@ -173,9 +203,12 @@
   }
 
   /* Visible focus for keyboard users only */
+  /* Two-tone focus ring: ivory core reads against the olive ground, charcoal
+     halo reads against the ivory sheet — ≥3:1 on either surface. */
   :focus-visible {
-    outline: 2px solid var(--color-wine);
+    outline: 2px solid var(--color-ivory);
     outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--color-charcoal);
     border-radius: var(--radius-sm);
   }
 
@@ -183,7 +216,7 @@
    * focus:not(:focus-visible) so nothing breaks keyboard accessibility. */
 
   ::selection {
-    background-color: var(--color-wine);
+    background-color: var(--color-olive);
     color: var(--color-ivory);
   }
 
@@ -212,6 +245,8 @@
     *::before,
     *::after {
       animation-duration: 0.01ms !important;
+      /* A 1000ms stagger would otherwise still hold content invisible. */
+      animation-delay: 0ms !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
     }
@@ -249,8 +284,9 @@
   left: 1rem;
   z-index: var(--z-toast);
   padding: 0.75rem 1.25rem;
-  background-color: var(--color-wine);
-  color: var(--color-ivory);
+  /* Light chip: needs its own boundary against the olive ground. */
+  background-color: var(--color-ivory);
+  color: var(--color-charcoal);
   font-size: var(--text-sm);
   transition: top var(--duration-fast) var(--ease-standard);
 
@@ -265,15 +301,129 @@
   scrollbar-color: var(--color-ivory-dim) transparent;
 }
 
-/* Hairline gold rule used as premium accent divider */
-@utility rule-gold {
+/* Hairline champagne rule used as premium accent divider */
+@utility rule-champagne {
   border: 0;
   height: 1px;
   background: linear-gradient(
     to right,
     transparent,
-    var(--color-gold) 20%,
-    var(--color-gold) 80%,
+    var(--color-champagne) 20%,
+    var(--color-champagne) 80%,
     transparent
   );
+}
+
+/*
+ * ── Motion: scroll reveal ──────────────────────────────────────────────
+ * Entrance system ported from the reference build: content fades in while
+ * rising into place, staggered in 100ms steps (100 → 1000ms).
+ *
+ *   .reveal-up   fadeInUp   — opacity 0→1 + translateY(100%→0). Default.
+ *   .reveal-soft fadeInSoft — same, but a 2rem rise. For tall blocks where a
+ *                             full-height travel reads as a lurch.
+ *   .reveal-fade fadeIn     — opacity only. For artwork that should not slide.
+ *
+ * Duration is 1.25s (the reference's default), easing `ease`.
+ * `.reveal` holds the element hidden; `<Reveal>` adds `.is-visible` from an
+ * IntersectionObserver the first time the element enters the viewport, which
+ * runs the animation once. Elements are never re-hidden on scroll back up.
+ *
+ * `animation-fill-mode: both` is what keeps the hidden state correct during
+ * the stagger delay, and what keeps content visible after the run completes.
+ */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 100%, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fadeInSoft {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 2rem, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@layer components {
+  .reveal {
+    opacity: 0;
+  }
+
+  .reveal.is-visible {
+    animation-duration: 1.25s;
+    animation-timing-function: ease;
+    animation-fill-mode: both;
+  }
+
+  .reveal-up.is-visible {
+    animation-name: fadeInUp;
+  }
+
+  .reveal-soft.is-visible {
+    animation-name: fadeInSoft;
+  }
+
+  .reveal-fade.is-visible {
+    animation-name: fadeIn;
+  }
+
+  /* Reduced motion: show everything, immediately, at its final position. */
+  @media (prefers-reduced-motion: reduce) {
+    .reveal {
+      opacity: 1;
+    }
+  }
+}
+
+/*
+ * ── Motion: hover lift ─────────────────────────────────────────────────
+ * Cards rise 15px on hover/focus-within and take the raised shadow, so the
+ * grid reads as touchable. 300ms — matches the reference's hover timing.
+ */
+@utility lift-on-hover {
+  transition:
+    transform 300ms var(--ease-standard),
+    box-shadow 300ms var(--ease-standard);
+
+  &:is(:hover, :focus-within) {
+    transform: translateY(-15px);
+    box-shadow: var(--shadow-card-hover);
+  }
+}
+
+/*
+ * ── Motion: shrink ─────────────────────────────────────────────────────
+ * Buttons press inward to 90% on hover/focus/active. Colour changes stay on
+ * the fast token so only the press feels weighty.
+ */
+@utility anim-shrink {
+  transition:
+    transform 300ms var(--ease-standard),
+    background-color var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard),
+    box-shadow var(--duration-fast) var(--ease-standard);
+
+  &:is(:hover, :focus, :active) {
+    transform: scale(0.9);
+  }
 }

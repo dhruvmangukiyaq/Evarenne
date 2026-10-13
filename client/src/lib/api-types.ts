@@ -25,33 +25,9 @@ export type DiamondShape =
 
 export type DiamondType = "natural" | "lab-grown";
 
-export type Metal =
-  | "platinum"
-  | "18k-white-gold"
-  | "14k-white-gold"
-  | "18k-yellow-gold"
-  | "14k-yellow-gold"
-  | "18k-rose-gold"
-  | "14k-rose-gold";
+export type Category = "loose-diamond";
 
-export type RingStyle =
-  | "solitaire"
-  | "halo"
-  | "pavé"
-  | "hidden-halo"
-  | "three-stone"
-  | "vintage"
-  | "bezel";
-
-export type Category =
-  | "loose-diamond"
-  | "engagement-ring"
-  | "wedding-band"
-  | "earrings"
-  | "pendant"
-  | "bracelet";
-
-export type ProductKind = "diamond" | "setting" | "ring" | "jewelry";
+export type ProductKind = "diamond";
 
 export interface DiamondSpecs {
   carat: number;
@@ -87,21 +63,11 @@ export interface Product {
   diamondType?: DiamondType;
   shape?: DiamondShape;
   specs?: DiamondSpecs;
-  metal?: Metal;
-  style?: RingStyle;
-  centerDiamond?: DiamondSpecs & { shape: DiamondShape; type: DiamondType };
-  compatibility?: {
-    shapes: DiamondShape[];
-    caratMin: number;
-    caratMax: number;
-  };
   featured?: boolean;
 }
 
 export type SortOption =
   | "relevance"
-  | "price-asc"
-  | "price-desc"
   | "carat-asc"
   | "carat-desc"
   | "newest";
@@ -113,11 +79,12 @@ export interface FacetBucket {
 
 export interface CatalogFacets {
   shapes: FacetBucket[];
-  metals: FacetBucket[];
-  styles: FacetBucket[];
   cuts: FacetBucket[];
   colors: FacetBucket[];
   clarities: FacetBucket[];
+  polishes: FacetBucket[];
+  symmetries: FacetBucket[];
+  fluorescences: FacetBucket[];
   priceMin: number | null;
   priceMax: number | null;
   caratMin: number | null;
@@ -148,30 +115,6 @@ export interface ProductResponse {
   dataSource: "development-seed";
   generatedAt: string;
   notice: string;
-}
-
-/* ---------------- Pricing quote (server-authoritative) ---------------- */
-
-export type QuoteLine =
-  | {
-      kind: "product";
-      product: { id: string; sku: string; name: string; price: Money };
-      quantity: number;
-      lineTotal: Money;
-    }
-  | {
-      kind: "configured-ring";
-      setting: { id: string; sku: string; name: string; price: Money };
-      diamond: { id: string; sku: string; name: string; price: Money };
-      quantity: number;
-      lineTotal: Money;
-    };
-
-export interface QuoteResponse {
-  lines: QuoteLine[];
-  total: Money;
-  status: "quote-only";
-  dataSource: "development-seed";
 }
 
 /* ---------------- API error shape ---------------- */

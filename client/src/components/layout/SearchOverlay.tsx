@@ -5,7 +5,6 @@ import { useApi } from "../../lib/useApi";
 import { api } from "../../lib/api";
 import { useDebounced } from "../../lib/a11y";
 import { ProductArt } from "../catalog/ProductArt";
-import { PriceDisplay } from "../ui/Display";
 import { shapeLabel } from "../../lib/labels";
 
 /**
@@ -57,7 +56,7 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
         type="button"
         aria-label="Close search"
         onClick={onClose}
-        className="absolute inset-0 cursor-default bg-ink/55 backdrop-blur-[3px]"
+        className="absolute inset-0 cursor-default bg-charcoal/55 backdrop-blur-[3px]"
       />
       <div
         ref={panelRef}
@@ -67,7 +66,7 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
         className="relative mx-auto mt-0 max-h-[100dvh] w-full max-w-2xl overflow-y-auto scroll-slim bg-ivory shadow-overlay sm:mt-24"
       >
         <form onSubmit={submit} className="flex items-center gap-3 border-b border-ivory-dim px-5 py-4">
-          <span aria-hidden="true" className="text-ink-soft">
+          <span aria-hidden="true" className="text-charcoal-soft">
             ⌕
           </span>
           <input
@@ -75,14 +74,14 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
             type="search"
             value={term}
             onChange={(event) => setTerm(event.target.value)}
-            placeholder="Search diamonds, rings, jewelry…"
+            placeholder="Search diamonds by shape, cut or carat…"
             aria-label="Search products"
             autoComplete="off"
-            className="h-12 flex-1 bg-transparent text-base text-ink placeholder:text-ink-faint focus:outline-none"
+            className="h-12 flex-1 bg-transparent text-base text-charcoal placeholder:text-charcoal-faint focus:outline-none"
           />
           <button
             type="submit"
-            className="font-sans text-sm font-medium text-wine underline-offset-4 hover:underline"
+            className="font-sans text-sm font-medium text-olive underline-offset-4 hover:underline"
           >
             Search
           </button>
@@ -90,7 +89,7 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
             type="button"
             onClick={onClose}
             aria-label="Close search"
-            className="flex h-9 w-9 items-center justify-center text-xl text-ink-soft hover:text-wine"
+            className="flex h-9 w-9 items-center justify-center text-xl text-charcoal-soft hover:text-olive"
           >
             <span aria-hidden="true">×</span>
           </button>
@@ -104,20 +103,20 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
           )}
 
           {loading && debounced.trim() && (
-            <p className="text-sm text-ink-soft" aria-busy="true">
+            <p className="text-sm text-charcoal-soft" aria-busy="true">
               Searching…
             </p>
           )}
 
           {!loading && debounced.trim() && !error && results.length === 0 && (
-            <p className="text-sm text-ink-soft">
+            <p className="text-sm text-charcoal-soft">
               No results for “{debounced.trim()}”. Try a shape (oval), style (solitaire), or SKU.
             </p>
           )}
 
           {results.length > 0 && (
             <>
-              <p className="mb-3 text-xs tracking-wide text-ink-soft uppercase">
+              <p className="mb-3 text-xs tracking-wide text-charcoal-soft uppercase">
                 {data?.total ?? results.length} result{results.length === 1 ? "" : "s"}
               </p>
               <ul className="flex flex-col divide-y divide-ivory-dim">
@@ -130,13 +129,13 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
                     >
                       <ProductArt product={product} className="h-14 w-14 shrink-0 border border-ivory-dim" />
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm font-medium text-ink">{product.name}</span>
-                        <span className="block text-xs text-ink-soft">
+                        <span className="block truncate text-sm font-medium text-charcoal">{product.name}</span>
+                        <span className="block text-xs text-charcoal-soft">
                           {product.shape ? `${shapeLabel(product.shape)} · ` : ""}
+                          {product.specs ? `${product.specs.carat.toFixed(2)} ct · ` : ""}
                           {product.sku}
                         </span>
                       </span>
-                      <PriceDisplay price={product.price} size="sm" compact />
                     </Link>
                   </li>
                 ))}
@@ -147,7 +146,7 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
                   onClose();
                   navigate(`/search?q=${encodeURIComponent(debounced.trim())}`);
                 }}
-                className="mt-4 font-sans text-sm font-medium text-wine underline-offset-4 hover:underline"
+                className="mt-4 font-sans text-sm font-medium text-olive underline-offset-4 hover:underline"
               >
                 See all results →
               </button>
@@ -155,7 +154,7 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
           )}
 
           {!debounced.trim() && (
-            <p className="text-sm text-ink-soft">
+            <p className="text-sm text-charcoal-soft">
               Search by product name, shape, style, or SKU — for example “oval”, “pavé”, or “EVN-RD-100”.
             </p>
           )}

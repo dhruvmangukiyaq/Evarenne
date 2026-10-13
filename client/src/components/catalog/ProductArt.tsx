@@ -10,9 +10,8 @@ import { shapeIcon, shapePhoto } from "../../lib/shape-assets";
  * bundled shape icons — never a fake photograph.
  */
 
-const WINE = "#541F32";
-const GOLD = "#C4A36B";
-const IVORY = "#F8F4EF";
+const OLIVE = "#606B45";
+const IVORY = "#F7F4EC";
 
 export function DiamondArt({
   shape,
@@ -41,7 +40,7 @@ export function DiamondArt({
       aria-label={decorative ? undefined : label}
       aria-hidden={decorative || undefined}
       className={className}
-      style={{ color: WINE }}
+      style={{ color: OLIVE }}
     >
       {framed && <rect width="100%" height="100%" fill={IVORY} />}
       {icon.paths.map((path, index) => (
@@ -89,31 +88,6 @@ export function ShapePhoto({
   );
 }
 
-/** Ring silhouette used for settings/rings without photography. */
-export function RingArt({ className = "", title }: { className?: string; title?: string }) {
-  return (
-    <svg viewBox="0 0 100 100" role="img" aria-label={title ?? "Ring illustration"} className={className}>
-      <rect width="100" height="100" fill={IVORY} />
-      <circle cx="50" cy="62" r="26" fill="none" stroke={WINE} strokeWidth="2.4" />
-      <path d="M50 16 L60 28 L50 38 L40 28 Z" fill={GOLD} fillOpacity="0.5" stroke={WINE} strokeWidth="1.4" />
-      <path d="M40 28 L60 28" stroke={WINE} strokeWidth="1" />
-    </svg>
-  );
-}
-
-/** Generic fine-jewelry silhouette (earrings/pendant/bracelet). */
-export function JewelryArt({ className = "", title }: { className?: string; title?: string }) {
-  return (
-    <svg viewBox="0 0 100 100" role="img" aria-label={title ?? "Jewelry illustration"} className={className}>
-      <rect width="100" height="100" fill={IVORY} />
-      <path d="M20 40 Q50 20 80 40" fill="none" stroke={WINE} strokeWidth="2" />
-      <circle cx="32" cy="52" r="7" fill={GOLD} fillOpacity="0.5" stroke={WINE} strokeWidth="1.4" />
-      <circle cx="50" cy="58" r="7" fill={GOLD} fillOpacity="0.5" stroke={WINE} strokeWidth="1.4" />
-      <circle cx="68" cy="52" r="7" fill={GOLD} fillOpacity="0.5" stroke={WINE} strokeWidth="1.4" />
-    </svg>
-  );
-}
-
 /** Picks the right artwork for any product based on its data. */
 export function ProductArt({
   product,
@@ -122,9 +96,9 @@ export function ProductArt({
   product: { shape?: DiamondShape; kind: string; name: string; category: string };
   className?: string;
 }) {
-  // Loose diamonds are the only products carrying a top-level `shape`, so this
-  // branch is where the bundled sample photograph belongs. Its alt text says
-  // plainly what the image is: a reference shot of that cut, not of this stone.
+  // Diamonds carry the bundled sample photograph for their cut. Its alt text
+  // says plainly what the image is: a reference shot of that cut, not of this
+  // specific stone.
   if (product.shape) {
     return (
       <ShapePhoto
@@ -134,8 +108,13 @@ export function ProductArt({
       />
     );
   }
-  if (product.kind === "setting" || product.kind === "ring") {
-    return <RingArt title={`${product.name} — ring illustration`} className={className} />;
-  }
-  return <JewelryArt title={`${product.name} — jewelry illustration`} className={className} />;
+  // Without a shape there is nothing honest to draw — show an empty panel
+  // rather than inventing artwork for the piece.
+  return (
+    <div
+      role="img"
+      aria-label={`${product.name} — illustration not available`}
+      className={`${className} bg-ivory-deep`}
+    />
+  );
 }

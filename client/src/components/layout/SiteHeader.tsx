@@ -1,63 +1,60 @@
 import { useRef, useState } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { navItems } from "./nav-items";
-import { useCart, useWishlist } from "../../store/cart";
 import { SearchOverlay } from "./SearchOverlay";
-import { CartDrawer } from "./CartDrawer";
 import { useEscapeKey, useClickOutside } from "../../lib/a11y";
+import { shapePhoto } from "../../lib/shape-assets";
 import { Button } from "../ui/Button";
 import { DiamondArt } from "../catalog/ProductArt";
 
-/** Brand wordmark — original type treatment, not any existing brand's mark. */
-function Wordmark({ className = "" }: { className?: string }) {
-  return (
-    <Link to="/" className={`inline-flex flex-col items-center leading-none ${className}`} aria-label="Evarenne — home">
-      <span className="font-display text-[1.65rem] font-medium tracking-[0.18em] text-wine">EVARENNE</span>
-      <span className="mt-0.5 font-sans text-[0.58rem] tracking-[0.42em] text-gold-deep uppercase">
-        Diamonds &amp; Fine Jewelry
-      </span>
-    </Link>
-  );
-}
-
-function CartButton({ onClick }: { onClick: () => void }) {
-  const { count } = useCart();
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={`Open bag, ${count} item${count === 1 ? "" : "s"}`}
-      className="relative flex h-10 w-10 items-center justify-center text-ink transition-colors hover:text-wine"
-    >
-      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.4">
-        <path d="M6 8h12l-1 12H7L6 8Z" />
-        <path d="M9 8V6a3 3 0 0 1 6 0v2" />
-      </svg>
-      {count > 0 && (
-        <span className="absolute top-1 right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-wine px-1 font-sans text-[0.62rem] font-medium text-ivory">
-          {count}
-        </span>
-      )}
-    </button>
-  );
-}
-
-function WishlistLink() {
-  const { entries } = useWishlist();
+/**
+ * Brand wordmark, rebuilt to match the supplied logo lockup: serif capitals with
+ * the closing full stop set apart. Two variants — one per ground, using both
+ * supplied logo files:
+ *  - on-light: charcoal capitals on an olive plate (the primary lockup) — for
+ *    ivory surfaces such as the mobile drawer and the footer.
+ *  - on-dark:  ivory capitals with a champagne full stop (your white logo
+ *    variant) — for the olive header. Charcoal on olive is only 2.6:1, so the
+ *    dark ground needs the light lockup to stay legible.
+ * Type treatment only — no raster asset, so it stays sharp at any size.
+ */
+function Wordmark({
+  className = "",
+  size = "lg",
+  variant = "on-dark",
+}: {
+  className?: string;
+  size?: "lg" | "sm";
+  variant?: "on-light" | "on-dark";
+}) {
+  const type = size === "lg" ? "text-[1.9rem]" : "text-[1.35rem]";
+  const dot = size === "lg" ? "text-[1.15rem]" : "text-[0.8rem]";
+  const onLight = variant === "on-light";
   return (
     <Link
-      to="/wishlist"
-      aria-label={`Wishlist, ${entries.length} saved item${entries.length === 1 ? "" : "s"}`}
-      className="relative flex h-10 w-10 items-center justify-center text-ink transition-colors hover:text-wine"
+      to="/"
+      className={`group inline-flex items-baseline leading-none ${className}`}
+      aria-label="Evarenne & Co. — home"
     >
-      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.4">
-        <path d="M12 20s-7-4.5-7-9.5A3.5 3.5 0 0 1 12 8a3.5 3.5 0 0 1 7 2.5C19 15.5 12 20 12 20Z" />
-      </svg>
-      {entries.length > 0 && (
-        <span className="absolute top-1 right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-wine px-1 font-sans text-[0.62rem] font-medium text-ivory">
-          {entries.length}
+      <span className="relative inline-block px-2.5">
+        {/* Olive plate sits behind the type and is inset so the capitals
+            overhang it top and bottom, as in the logo. Only rendered on light
+            grounds, where it can actually be seen. */}
+        <span
+          aria-hidden="true"
+          className={`absolute inset-x-0 top-[9%] bottom-[9%] ${onLight ? "bg-olive" : "bg-transparent"}`}
+        />
+        <span
+          className={`relative font-display ${type} font-semibold uppercase tracking-[0.015em] ${
+            onLight ? "text-charcoal" : "text-ivory"
+          }`}
+        >
+          Evarenne &amp; Co
         </span>
-      )}
+      </span>
+      <span aria-hidden="true" className={`${dot} font-display ${onLight ? "text-olive" : "text-champagne"}`}>
+        .
+      </span>
     </Link>
   );
 }
@@ -67,7 +64,6 @@ export function SiteHeader() {
   const openMenuItem = openMenu ? navItems.find((item) => item.label === openMenu) : undefined;
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [cartOpen, setCartOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const headerRef = useRef<HTMLElement>(null);
@@ -90,14 +86,17 @@ export function SiteHeader() {
 
   return (
     <>
-      {/* Announcement bar: factual, no invented promises */}
-      <div className="bg-wine px-4 py-2 text-center">
-        <p className="font-sans text-xs tracking-[0.14em] text-ivory uppercase">
-          Preview catalog — sample data, not yet available for purchase
+      {/* Announcement bar: the champagne ribbon — charcoal on champagne is 6.9:1 */}
+      <div className="bg-champagne px-4 py-2 text-center">
+        <p className="font-sans text-xs tracking-[0.14em] text-charcoal uppercase">
+          Reference catalog — sample data, for viewing only
         </p>
       </div>
 
-      <header ref={headerRef} className="sticky top-0 z-(--z-header) border-b border-ivory-dim bg-ivory/95 backdrop-blur">
+      <header
+        ref={headerRef}
+        className="sticky top-0 z-(--z-header) border-b border-ivory/25 bg-olive/95 backdrop-blur"
+      >
         <div className="mx-auto flex max-w-(--container-page) items-center justify-between gap-4 px-4 py-3 lg:px-8">
           {/* Mobile: menu toggle */}
           <button
@@ -105,7 +104,7 @@ export function SiteHeader() {
             onClick={() => setMobileOpen(true)}
             aria-label="Open navigation menu"
             aria-expanded={mobileOpen}
-            className="flex h-10 w-10 items-center justify-center text-ink lg:hidden"
+            className="flex h-10 w-10 items-center justify-center text-ivory lg:hidden"
           >
             <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5">
               <path d="M4 7h16M4 12h16M4 17h16" />
@@ -120,7 +119,7 @@ export function SiteHeader() {
               type="button"
               onClick={() => setSearchOpen(true)}
               aria-label="Search"
-              className="flex h-10 w-10 items-center justify-center text-ink transition-colors hover:text-wine"
+              className="flex h-10 w-10 items-center justify-center rounded-full text-ivory transition-colors hover:bg-ivory/12"
             >
               <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.4">
                 <circle cx="11" cy="11" r="6" />
@@ -129,34 +128,26 @@ export function SiteHeader() {
             </button>
           </div>
 
-          {/* Mobile: search + wishlist + cart on the right */}
+          {/* Mobile: search on the right */}
           <div className="flex items-center gap-0.5 lg:hidden">
             <button
               type="button"
               onClick={() => setSearchOpen(true)}
               aria-label="Search"
-              className="flex h-10 w-10 items-center justify-center text-ink"
+              className="flex h-10 w-10 items-center justify-center rounded-full text-ivory transition-colors hover:bg-ivory/12"
             >
               <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.4">
                 <circle cx="11" cy="11" r="6" />
                 <path d="m16 16 4 4" />
               </svg>
             </button>
-            <WishlistLink />
-            <CartButton onClick={() => setCartOpen(true)} />
-          </div>
-
-          {/* Desktop: wishlist + cart on the right */}
-          <div className="hidden items-center gap-0.5 lg:flex">
-            <WishlistLink />
-            <CartButton onClick={() => setCartOpen(true)} />
           </div>
         </div>
 
         {/* Desktop nav row */}
         <nav
           aria-label="Primary"
-          className="relative hidden border-t border-ivory-dim lg:block"
+          className="relative hidden border-t border-ivory/25 lg:block"
           onMouseLeave={() => setOpenMenu(null)}
         >
           <ul className="mx-auto flex max-w-(--container-page) items-center justify-center gap-1 px-8">
@@ -169,14 +160,17 @@ export function SiteHeader() {
                   to={item.to}
                   onFocus={() => setOpenMenu(item.menu ? item.label : null)}
                   className={({ isActive }) =>
-                    `block px-4 py-3 font-sans text-sm tracking-[0.06em] uppercase transition-colors ${
-                      isActive ? "text-wine" : "text-ink hover:text-wine"
+                    // Text stays ivory (5.2:1 on olive). Champagne carries the
+                    // active/hover underline only — a non-text indicator, so its
+                    // 2.6:1 against olive is fine and never blocks legibility.
+                    `block px-4 py-3 font-sans text-sm tracking-[0.06em] text-ivory uppercase underline-offset-[0.6em] transition-colors hover:underline hover:decoration-champagne ${
+                      isActive ? "underline decoration-champagne decoration-2" : ""
                     }`
                   }
                 >
                   {item.label}
                   {item.menu && (
-                    <span aria-hidden="true" className="ml-1.5 text-[0.6em] text-gold-deep">
+                    <span aria-hidden="true" className="ml-1.5 text-[0.6em] text-champagne">
                       ▾
                     </span>
                   )}
@@ -188,23 +182,24 @@ export function SiteHeader() {
           {/* Panel is anchored to the nav (not the trigger) so it spans the full
               width and the shape grid never collapses into the trigger's width. */}
           {openMenuItem?.menu && (
-            <div className="absolute top-full left-0 right-0 border border-t-0 border-ivory-dim bg-ivory shadow-card-hover">
-              <div className="mx-auto max-w-(--container-page) px-8 py-7">
-                {openMenuItem.menu.map((group) => (
-                  <div key={group.label}>
-                    <p className="mb-4 text-eyebrow text-gold-deep">{group.label}</p>
-                    <ul className="grid grid-cols-2 gap-x-6 gap-y-1 sm:grid-cols-3 lg:grid-cols-5">
+            <div className="absolute top-full left-0 right-0 border border-t-0 border-ivory-dim bg-sand shadow-card-hover">
+              <div className="mx-auto grid max-w-(--container-page) items-stretch gap-x-14 gap-y-10 px-8 py-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_18rem]">
+                {openMenuItem.menu.groups.map((group) => (
+                  <div key={group.label} className="flex flex-col">
+                    <p className="mb-5 font-display text-h4 text-charcoal">{group.label}</p>
+                    {/* Two columns that read across (Round | Pear, Oval | Emerald …) */}
+                    <ul className="grid grid-cols-2 gap-x-6 gap-y-0.5">
                       {group.links.map((link) => (
                         <li key={link.to}>
                           <Link
                             to={link.to}
-                            className="group flex items-center gap-3 py-2 text-sm text-ink underline-offset-4 transition-colors hover:text-wine"
+                            className="group flex items-center gap-3 py-1.5 text-sm text-charcoal underline-offset-4 transition-colors hover:text-olive"
                           >
                             {link.shape && (
                               <DiamondArt
                                 shape={link.shape}
                                 framed={false}
-                                className="h-8 w-8 shrink-0"
+                                className="h-7 w-7 shrink-0"
                                 title=""
                               />
                             )}
@@ -213,8 +208,28 @@ export function SiteHeader() {
                         </li>
                       ))}
                     </ul>
+                    <Link
+                      to={group.allTo}
+                      className="mt-6 inline-flex h-11 items-center justify-center self-start bg-taupe px-8 font-display text-lg tracking-wide text-ivory transition-colors hover:bg-taupe-hover"
+                    >
+                      {group.allLabel}
+                    </Link>
                   </div>
                 ))}
+
+                {/* Sample photography anchors the panel — labelled as a shape
+                    reference, never as a specific stone for sale. */}
+                <figure className="hidden lg:block">
+                  <div className="h-full w-full overflow-hidden">
+                    <img
+                      src={shapePhoto(openMenuItem.menu.image.shape) ?? undefined}
+                      alt={openMenuItem.menu.image.alt}
+                      loading="lazy"
+                      decoding="async"
+                      className="h-full w-full object-cover object-center"
+                    />
+                  </div>
+                </figure>
               </div>
             </div>
           )}
@@ -228,19 +243,19 @@ export function SiteHeader() {
             type="button"
             aria-label="Close navigation menu"
             onClick={() => setMobileOpen(false)}
-            className="absolute inset-0 cursor-default bg-ink/55 backdrop-blur-[3px]"
+            className="absolute inset-0 cursor-default bg-charcoal/55 backdrop-blur-[3px]"
           />
           <nav
             aria-label="Mobile primary"
             className="absolute top-0 bottom-0 left-0 flex w-full max-w-sm flex-col bg-ivory shadow-drawer"
           >
             <div className="flex items-center justify-between border-b border-ivory-dim px-4 py-3">
-              <Wordmark />
+              <Wordmark size="sm" variant="on-light" />
               <button
                 type="button"
                 onClick={() => setMobileOpen(false)}
                 aria-label="Close navigation menu"
-                className="flex h-10 w-10 items-center justify-center text-2xl text-ink-soft hover:text-wine"
+                className="flex h-10 w-10 items-center justify-center text-2xl text-charcoal-soft hover:text-olive"
               >
                 <span aria-hidden="true">×</span>
               </button>
@@ -251,7 +266,7 @@ export function SiteHeader() {
                   <div className="flex items-center justify-between">
                     <Link
                       to={item.to}
-                      className="flex-1 py-3.5 font-sans text-sm tracking-[0.06em] text-ink uppercase"
+                      className="flex-1 py-3.5 font-sans text-sm tracking-[0.06em] text-charcoal uppercase"
                     >
                       {item.label}
                     </Link>
@@ -261,7 +276,7 @@ export function SiteHeader() {
                         aria-expanded={openMenu === item.label}
                         aria-label={`Toggle ${item.label} submenu`}
                         onClick={() => setOpenMenu(openMenu === item.label ? null : item.label)}
-                        className="flex h-9 w-9 items-center justify-center text-gold-deep"
+                        className="flex h-9 w-9 items-center justify-center text-champagne-deep"
                       >
                         <span aria-hidden="true">{openMenu === item.label ? "−" : "+"}</span>
                       </button>
@@ -269,18 +284,24 @@ export function SiteHeader() {
                   </div>
                   {item.menu && openMenu === item.label && (
                     <div className="pb-4">
-                      {item.menu.map((group) => (
+                      {item.menu.groups.map((group) => (
                         <div key={group.label} className="mb-3">
-                          <p className="mb-1.5 text-eyebrow text-gold-deep">{group.label}</p>
+                          <p className="mb-1.5 font-display text-base text-charcoal">{group.label}</p>
                           <ul className="flex flex-col gap-1.5 pl-1">
                             {group.links.map((link) => (
                               <li key={link.to}>
-                                <Link to={link.to} className="text-sm text-ink-soft hover:text-wine">
+                                <Link to={link.to} className="text-sm text-charcoal-soft hover:text-olive">
                                   {link.label}
                                 </Link>
                               </li>
                             ))}
                           </ul>
+                          <Link
+                            to={group.allTo}
+                            className="mt-3 inline-flex h-10 items-center justify-center bg-taupe px-6 font-display text-base tracking-wide text-ivory"
+                          >
+                            {group.allLabel}
+                          </Link>
                         </div>
                       ))}
                     </div>
@@ -304,7 +325,6 @@ export function SiteHeader() {
       )}
 
       <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
-      <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
     </>
   );
 }

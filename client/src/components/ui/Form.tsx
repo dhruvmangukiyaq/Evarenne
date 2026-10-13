@@ -26,10 +26,10 @@ function FieldWrapper({ id, label, hint, error, required, children }: FieldWrapp
   return (
     <div className="flex flex-col gap-1.5">
       {label !== undefined && (
-        <label htmlFor={id} className="font-sans text-sm font-medium text-ink">
+        <label htmlFor={id} className="font-sans text-sm font-medium text-charcoal">
           {label}
           {required && (
-            <span aria-hidden="true" className="ml-0.5 text-wine">
+            <span aria-hidden="true" className="ml-0.5 text-olive">
               *
             </span>
           )}
@@ -38,7 +38,7 @@ function FieldWrapper({ id, label, hint, error, required, children }: FieldWrapp
       )}
       {children({ describedBy, invalid: Boolean(error) })}
       {hint && (
-        <p id={hintId} className="text-xs text-ink-soft">
+        <p id={hintId} className="text-xs text-charcoal-soft">
           {hint}
         </p>
       )}
@@ -64,14 +64,14 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 const controlBase =
-  "w-full bg-white text-ink placeholder:text-ink-faint border transition-colors duration-150 " +
-  "focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-wine";
+  "w-full bg-white text-charcoal placeholder:text-charcoal-faint border transition-colors duration-150 " +
+  "focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-olive";
 
 const controlState = (invalid: boolean, disabled?: boolean) =>
   invalid
     ? "border-danger bg-danger-soft/40 focus:outline-danger"
-    : "border-ivory-dim hover:border-ink-faint focus:border-wine focus:ring-1 focus:ring-wine/30" +
-      (disabled ? " bg-ivory-deep text-ink-faint" : "");
+    : "border-ivory-dim hover:border-charcoal-faint focus:border-olive focus:ring-1 focus:ring-olive/30" +
+      (disabled ? " bg-ivory-deep text-charcoal-faint" : "");
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   { label, hint, error, required, id, className = "", inputClassName = "", disabled, ...rest },
@@ -187,7 +187,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
           </select>
           <span
             aria-hidden="true"
-            className="pointer-events-none absolute top-1/2 right-3.5 -translate-y-1/2 text-ink-soft"
+            className="pointer-events-none absolute top-1/2 right-3.5 -translate-y-1/2 text-charcoal-soft"
           >
             ▾
           </span>
@@ -220,15 +220,15 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Che
         type="checkbox"
         disabled={disabled}
         aria-describedby={hintId}
-        className="mt-0.5 h-4.5 w-4.5 shrink-0 accent-wine"
+        className="mt-0.5 h-4.5 w-4.5 shrink-0 accent-olive"
         {...rest}
       />
       <div className="flex flex-col gap-0.5">
-        <label htmlFor={inputId} className="cursor-pointer text-sm text-ink">
+        <label htmlFor={inputId} className="cursor-pointer text-sm text-charcoal">
           {label}
         </label>
         {hint && (
-          <p id={hintId} className="text-xs text-ink-soft">
+          <p id={hintId} className="text-xs text-charcoal-soft">
             {hint}
           </p>
         )}
@@ -274,7 +274,7 @@ export function RadioGroup({
       aria-invalid={error ? true : undefined}
       className={`flex flex-col gap-2.5 ${className}`}
     >
-      <legend className="mb-1 font-sans text-sm font-medium text-ink">{legend}</legend>
+      <legend className="mb-1 font-sans text-sm font-medium text-charcoal">{legend}</legend>
       {options.map((option) => {
         const optionId = `${groupId}-${option.value}`;
         const isSelected = value === option.value;
@@ -283,8 +283,8 @@ export function RadioGroup({
             key={option.value}
             className={
               isSelected
-                ? "flex items-start gap-3 border border-wine bg-wine/[0.04] p-3"
-                : "flex items-start gap-3 border border-ivory-dim p-3 transition-colors hover:border-ink-faint"
+                ? "flex items-start gap-3 border border-olive bg-olive/[0.04] p-3"
+                : "flex items-start gap-3 border border-ivory-dim p-3 transition-colors hover:border-charcoal-faint"
             }
           >
             <input
@@ -295,13 +295,13 @@ export function RadioGroup({
               checked={isSelected}
               disabled={option.disabled}
               onChange={() => onChange(option.value)}
-              className="mt-0.5 h-4.5 w-4.5 shrink-0 accent-wine"
+              className="mt-0.5 h-4.5 w-4.5 shrink-0 accent-olive"
             />
             <div className="flex flex-col gap-0.5">
-              <label htmlFor={optionId} className="cursor-pointer text-sm font-medium text-ink">
+              <label htmlFor={optionId} className="cursor-pointer text-sm font-medium text-charcoal">
                 {option.label}
               </label>
-              {option.hint && <p className="text-xs text-ink-soft">{option.hint}</p>}
+              {option.hint && <p className="text-xs text-charcoal-soft">{option.hint}</p>}
             </div>
           </div>
         );

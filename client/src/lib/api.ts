@@ -1,4 +1,4 @@
-import type { CatalogResponse, Product, ProductResponse, QuoteResponse, SearchResponse } from "./api-types";
+import type { CatalogResponse, Product, ProductResponse, SearchResponse } from "./api-types";
 
 /** Thin typed fetch wrapper around the Evarenne API. */
 
@@ -50,15 +50,14 @@ export interface CatalogParams {
   diamondType?: string;
   q?: string;
   shapes?: string[];
-  metals?: string[];
-  styles?: string[];
   cuts?: string[];
   colors?: string[];
   clarities?: string[];
+  polishes?: string[];
+  symmetries?: string[];
+  fluorescences?: string[];
   caratMin?: number;
   caratMax?: number;
-  priceMin?: number;
-  priceMax?: number;
   page?: number;
   pageSize?: number;
   sort?: string;
@@ -85,9 +84,4 @@ export const api = {
     request<ProductResponse>(`/api/products/${encodeURIComponent(slugOrId)}`),
   search: (q: string) => request<SearchResponse>(`/api/search${toQueryString({ q })}`),
   home: () => request<{ featured: Product[]; dataSource: string }>("/api/home"),
-  quote: (items: Array<{ productId?: string; settingId?: string; diamondId?: string; quantity: number }>) =>
-    request<QuoteResponse>("/api/pricing/quote", {
-      method: "POST",
-      body: JSON.stringify({ items }),
-    }),
 };

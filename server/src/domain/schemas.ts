@@ -6,10 +6,8 @@ import {
   DIAMOND_SHAPES,
   DIAMOND_TYPES,
   FLUORESCENCE_GRADES,
-  METALS,
   POLISH_GRADES,
   PRODUCT_KINDS,
-  RING_STYLES,
   SORT_OPTIONS,
   SYMMETRY_GRADES,
   CATEGORIES,
@@ -59,49 +57,14 @@ export const productSchema = z
     diamondType: z.enum(DIAMOND_TYPES).optional(),
     shape: z.enum(DIAMOND_SHAPES).optional(),
     specs: specsSchema.optional(),
-    metal: z.enum(METALS).optional(),
-    style: z.enum(RING_STYLES).optional(),
-    centerDiamond: specsSchema
-      .extend({ shape: z.enum(DIAMOND_SHAPES), type: z.enum(DIAMOND_TYPES) })
-      .optional(),
-    compatibility: z
-      .object({
-        shapes: z.array(z.enum(DIAMOND_SHAPES)).min(1),
-        caratMin: z.number().positive(),
-        caratMax: z.number().positive(),
-      })
-      .optional(),
     featured: z.boolean().optional(),
   })
   .superRefine((product, ctx) => {
-    if (product.kind === "diamond") {
-      if (!product.diamondType || !product.shape || !product.specs) {
-        ctx.addIssue({
-          code: "custom",
-          message: "Diamond products require diamondType, shape and specs",
-          path: ["kind"],
-        });
-      }
-    }
-    if (product.kind === "setting" && !product.compatibility) {
+    if (!product.diamondType || !product.shape || !product.specs) {
       ctx.addIssue({
         code: "custom",
-        message: "Settings require compatibility (shapes + carat range)",
+        message: "Diamond products require diamondType, shape and specs",
         path: ["kind"],
-      });
-    }
-    if (product.kind === "ring" && !product.centerDiamond) {
-      ctx.addIssue({
-        code: "custom",
-        message: "Rings require a centerDiamond specification",
-        path: ["kind"],
-      });
-    }
-    if (product.compatibility && product.compatibility.caratMax < product.compatibility.caratMin) {
-      ctx.addIssue({
-        code: "custom",
-        message: "compatibility.caratMax must be >= caratMin",
-        path: ["compatibility", "caratMax"],
       });
     }
   });
@@ -124,11 +87,12 @@ export const catalogQuerySchema = z
     diamondType: z.enum(DIAMOND_TYPES).optional(),
     q: z.string().max(200).optional(),
     shapes: csvEnum(DIAMOND_SHAPES).optional(),
-    metals: csvEnum(METALS).optional(),
-    styles: csvEnum(RING_STYLES).optional(),
     cuts: csvEnum(CUT_GRADES).optional(),
     colors: csvEnum(COLOR_GRADES).optional(),
     clarities: csvEnum(CLARITY_GRADES).optional(),
+    polishes: csvEnum(POLISH_GRADES).optional(),
+    symmetries: csvEnum(SYMMETRY_GRADES).optional(),
+    fluorescences: csvEnum(FLUORESCENCE_GRADES).optional(),
     caratMin: optionalNumber,
     caratMax: optionalNumber,
     priceMin: optionalNumber,

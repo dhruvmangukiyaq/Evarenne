@@ -3,7 +3,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { Button } from "./Button";
-import { Breadcrumbs, EmptyState, ErrorState, PriceDisplay, Skeleton, Badge } from "./Display";
+import { Breadcrumbs, EmptyState, ErrorState, Skeleton, Badge } from "./Display";
 import { Checkbox, Input, RadioGroup, Select } from "./Form";
 import { Dialog, Drawer } from "./Overlay";
 import { ToastProvider } from "./Toast";
@@ -103,20 +103,6 @@ describe("RadioGroup", () => {
   });
 });
 
-describe("PriceDisplay", () => {
-  it("formats money and announces the original price when discounted", () => {
-    render(
-      <PriceDisplay
-        price={{ amount: 199900, currency: "USD" }}
-        compareAt={{ amount: 249900, currency: "USD" }}
-      />,
-    );
-    expect(screen.getByText("$1,999.00")).toBeInTheDocument();
-    expect(screen.getByText("$2,499.00")).toBeInTheDocument();
-    expect(screen.getByText(/reduced from/i)).toBeInTheDocument();
-  });
-});
-
 describe("Breadcrumbs", () => {
   it("marks the last item as current page", () => {
     render(
@@ -151,7 +137,7 @@ describe("EmptyState / ErrorState / Skeleton / Badge", () => {
   });
 
   it("renders badge with visible text (not color-only)", () => {
-    render(<Badge tone="wine">Natural</Badge>);
+    render(<Badge tone="olive">Natural</Badge>);
     expect(screen.getByText("Natural")).toBeInTheDocument();
   });
 });
@@ -159,17 +145,17 @@ describe("EmptyState / ErrorState / Skeleton / Badge", () => {
 describe("Dialog", () => {
   function Harness() {
     return (
-      <Dialog open onClose={() => {}} title="Ring size guide" description="How to measure">
-        <p>Measure at the end of the day.</p>
+      <Dialog open onClose={() => {}} title="Diamond care" description="How to store">
+        <p>Keep each stone in its own pouch.</p>
       </Dialog>
     );
   }
 
   it("is a labelled modal dialog", () => {
     render(<Harness />);
-    const dialog = screen.getByRole("dialog", { name: /ring size guide/i });
+    const dialog = screen.getByRole("dialog", { name: /diamond care/i });
     expect(dialog).toHaveAttribute("aria-modal", "true");
-    expect(dialog).toHaveAccessibleDescription(/how to measure/i);
+    expect(dialog).toHaveAccessibleDescription(/how to store/i);
   });
 
   it("closes on Escape", async () => {
