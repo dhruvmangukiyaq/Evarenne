@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
+import { whatsappInquiryUrl } from "../../lib/whatsapp";
 
-const columns: Array<{ heading: string; links: Array<{ label: string; to: string }> }> = [
+type FooterLink = { label: string; to: string } | { label: string; href: string };
+
+const columns: Array<{ heading: string; links: FooterLink[] }> = [
   {
     heading: "Shop",
     links: [
@@ -11,7 +14,7 @@ const columns: Array<{ heading: string; links: Array<{ label: string; to: string
   {
     heading: "Client Care",
     links: [
-      { label: "Inquire Now", to: "/appointments" },
+      { label: "Inquire Now", href: whatsappInquiryUrl() },
       { label: "Contact", to: "/contact" },
       { label: "FAQ", to: "/faq" },
       { label: "Shipping & Returns", to: "/shipping-returns" },
@@ -53,13 +56,24 @@ export function SiteFooter() {
               <h2 className="mb-4 text-eyebrow text-champagne">{column.heading}</h2>
               <ul className="flex flex-col gap-2.5">
                 {column.links.map((link) => (
-                  <li key={link.to}>
-                    <Link
-                      to={link.to}
-                      className="text-sm text-ivory/85 underline-offset-4 transition-colors hover:text-ivory hover:underline"
-                    >
-                      {link.label}
-                    </Link>
+                  <li key={link.label}>
+                    {"href" in link ? (
+                      <a
+                        href={link.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-ivory/85 underline-offset-4 transition-colors hover:text-ivory hover:underline"
+                      >
+                        {link.label}
+                      </a>
+                    ) : (
+                      <Link
+                        to={link.to}
+                        className="text-sm text-ivory/85 underline-offset-4 transition-colors hover:text-ivory hover:underline"
+                      >
+                        {link.label}
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>

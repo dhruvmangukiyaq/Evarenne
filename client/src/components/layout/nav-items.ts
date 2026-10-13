@@ -1,4 +1,5 @@
 import type { DiamondShape } from "../../lib/api-types";
+import { whatsappInquiryUrl } from "../../lib/whatsapp";
 
 /**
  * Single source of truth for primary navigation: every entry points at a real
@@ -40,6 +41,11 @@ export interface NavItem {
   to: string;
   /** Desktop mega-menu panel; absent = plain link. */
   menu?: NavMenu;
+  /**
+   * `to` is an absolute URL (e.g. WhatsApp) rather than a route — rendered as
+   * a plain anchor that leaves the site instead of a router link.
+   */
+  external?: boolean;
 }
 
 /**
@@ -89,5 +95,6 @@ export const navItems: NavItem[] = [
     },
   },
   { label: "Our Story", to: "/our-story" },
-  { label: "Inquire Now", to: "/appointments" },
+  // Enquiries happen in WhatsApp, not on a form page.
+  { label: "Inquire Now", to: whatsappInquiryUrl(), external: true },
 ];

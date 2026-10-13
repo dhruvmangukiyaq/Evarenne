@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { useApi } from "../lib/useApi";
+import { whatsappInquiryUrl } from "../lib/whatsapp";
 import type { Product } from "../lib/api-types";
 import { ProductArt } from "../components/catalog/ProductArt";
 import { shapeLabel } from "../lib/labels";
@@ -86,10 +87,11 @@ export function ProductDetailPage() {
     { label: product.name },
   ];
 
-  // Carried into the inquiry form so the specialist knows which stone prompted it.
-  const inquiryTo =
-    `/appointments?product=${encodeURIComponent(product.name)}` +
-    (product.sku ? `&sku=${encodeURIComponent(product.sku)}` : "");
+  // The enquiry names this stone in WhatsApp, so the specialist knows which
+  // piece prompted it before the first reply.
+  const inquiryTo = whatsappInquiryUrl(
+    product.sku ? `${product.name} (SKU ${product.sku})` : product.name,
+  );
 
   return (
     <div className="mx-auto max-w-(--container-page) px-4 py-8 lg:px-8">
@@ -186,12 +188,14 @@ export function ProductDetailPage() {
               Send an inquiry and a specialist will come prepared with this stone's grading details,
               comparable options and viewing times.
             </p>
-            <Link
-              to={inquiryTo}
+            <a
+              href={inquiryTo}
+              target="_blank"
+              rel="noopener noreferrer"
               className="mt-5 inline-flex h-[3.25rem] items-center bg-olive px-8 font-sans text-base font-medium text-ivory hover:bg-olive-hover anim-shrink"
             >
               Inquire Now
-            </Link>
+            </a>
           </div>
 
           {/* Specifications */}

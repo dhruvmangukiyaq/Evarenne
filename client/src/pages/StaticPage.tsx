@@ -1,4 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
+import { whatsappInquiryUrl } from "../lib/whatsapp";
 import { Reveal } from "../components/ui/Reveal";
 
 /**
@@ -149,12 +150,14 @@ export function StaticPage() {
 
       <Reveal delay={400}>
         <div className="mt-12 border-t border-ivory-dim pt-8">
-          <Link
-            to="/appointments"
+          <a
+            href={whatsappInquiryUrl()}
+            target="_blank"
+            rel="noopener noreferrer"
             className="inline-flex h-11 items-center bg-olive px-6 font-sans text-sm font-medium text-ivory hover:bg-olive-hover anim-shrink"
           >
             Inquire Now
-          </Link>
+          </a>
         </div>
       </Reveal>
     </article>

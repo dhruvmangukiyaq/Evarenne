@@ -1,10 +1,10 @@
 import { useRef, useState } from "react";
-import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import { navItems } from "./nav-items";
 import { SearchOverlay } from "./SearchOverlay";
 import { useEscapeKey, useClickOutside } from "../../lib/a11y";
 import { shapePhoto } from "../../lib/shape-assets";
-import { Button } from "../ui/Button";
+import { whatsappInquiryUrl } from "../../lib/whatsapp";
 import { DiamondArt } from "../catalog/ProductArt";
 
 /**
@@ -51,6 +51,15 @@ function Wordmark({
   );
 }
 
+/** Nav link styling, shared by route links and the off-site enquiry link. */
+const navLinkClass = (isActive: boolean) =>
+  // Text stays ivory (5.2:1 on olive). Champagne carries the
+  // active/hover underline only — a non-text indicator, so its
+  // 2.6:1 against olive is fine and never blocks legibility.
+  `block px-4 py-3 font-sans text-sm tracking-[0.06em] text-ivory uppercase underline-offset-[0.6em] transition-colors hover:underline hover:decoration-champagne ${
+    isActive ? "underline decoration-champagne decoration-2" : ""
+  }`;
+
 export function SiteHeader() {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const openMenuPanel = openMenu
@@ -59,7 +68,6 @@ export function SiteHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const location = useLocation();
-  const navigate = useNavigate();
   const headerRef = useRef<HTMLElement>(null);
 
   // Close menus on route change (spec: mobile menu closes after route
@@ -150,20 +158,25 @@ export function SiteHeader() {
                 key={item.label}
                 onMouseEnter={() => setOpenMenu(item.menu ? item.label : null)}
               >
-                <NavLink
-                  to={item.to}
-                  onFocus={() => setOpenMenu(item.menu ? item.label : null)}
-                  className={({ isActive }) =>
-                    // Text stays ivory (5.2:1 on olive). Champagne carries the
-                    // active/hover underline only — a non-text indicator, so its
-                    // 2.6:1 against olive is fine and never blocks legibility.
-                    `block px-4 py-3 font-sans text-sm tracking-[0.06em] text-ivory uppercase underline-offset-[0.6em] transition-colors hover:underline hover:decoration-champagne ${
-                      isActive ? "underline decoration-champagne decoration-2" : ""
-                    }`
-                  }
-                >
-                  {item.label}
-                </NavLink>
+                {item.external ? (
+                  <a
+                    href={item.to}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onFocus={() => setOpenMenu(item.menu ? item.label : null)}
+                    className={navLinkClass(false)}
+                  >
+                    {item.label}
+                  </a>
+                ) : (
+                  <NavLink
+                    to={item.to}
+                    onFocus={() => setOpenMenu(item.menu ? item.label : null)}
+                    className={({ isActive }) => navLinkClass(isActive)}
+                  >
+                    {item.label}
+                  </NavLink>
+                )}
               </li>
             ))}
           </ul>
@@ -266,12 +279,23 @@ export function SiteHeader() {
               {navItems.map((item) => (
                 <li key={item.label} className="border-b border-ivory-dim/70 last:border-b-0">
                   <div className="flex items-center justify-between">
-                    <Link
-                      to={item.to}
-                      className="flex-1 py-3.5 font-sans text-sm tracking-[0.06em] text-charcoal uppercase"
-                    >
-                      {item.label}
-                    </Link>
+                    {item.external ? (
+                      <a
+                        href={item.to}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 py-3.5 font-sans text-sm tracking-[0.06em] text-charcoal uppercase"
+                      >
+                        {item.label}
+                      </a>
+                    ) : (
+                      <Link
+                        to={item.to}
+                        className="flex-1 py-3.5 font-sans text-sm tracking-[0.06em] text-charcoal uppercase"
+                      >
+                        {item.label}
+                      </Link>
+                    )}
                     {item.menu && (
                       <button
                         type="button"
@@ -312,15 +336,17 @@ export function SiteHeader() {
               ))}
             </ul>
             <div className="border-t border-ivory-dim px-4 py-4">
-              <Button
-                fullWidth
-                onClick={() => {
-                  setMobileOpen(false);
-                  navigate("/appointments");
-                }}
+              {/* Anchored, not a button — WhatsApp hands the link straight to
+                  the app on a phone, which window.open() would not. */}
+              <a
+                href={whatsappInquiryUrl()}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setMobileOpen(false)}
+                className="relative inline-flex h-11 w-full items-center justify-center gap-2 border border-olive bg-olive px-6 font-sans font-medium text-ivory shadow-[0_1px_0_0_rgb(38_40_33/0.15)] transition-colors hover:bg-olive-hover active:bg-olive-active anim-shrink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-olive"
               >
                 Inquire Now
-              </Button>
+              </a>
             </div>
           </nav>
         </div>

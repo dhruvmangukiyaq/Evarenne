@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { api } from "../lib/api";
 import { useApi } from "../lib/useApi";
+import { whatsappInquiryUrl } from "../lib/whatsapp";
 import { ProductCard } from "../components/catalog/ProductCard";
 import { DiamondArt } from "../components/catalog/ProductArt";
 import { HeroStage } from "../components/home/HeroStage";
@@ -89,12 +90,14 @@ export function HomePage() {
                 >
                   Browse Lab-Grown Diamonds
                 </Link>
-                <Link
-                  to="/appointments"
+                <a
+                  href={whatsappInquiryUrl()}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="inline-flex h-[3.25rem] items-center border border-olive px-8 font-sans text-base font-medium text-olive hover:bg-olive hover:text-ivory anim-shrink"
                 >
                   Inquire Now
-                </Link>
+                </a>
               </div>
             </Reveal>
           </div>
@@ -226,12 +229,14 @@ export function HomePage() {
         </Reveal>
         <Reveal delay={400}>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Link
-              to="/appointments"
+            <a
+              href={whatsappInquiryUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex h-[3.25rem] items-center bg-olive px-8 font-sans text-base font-medium text-ivory hover:bg-olive-hover anim-shrink"
             >
               Inquire Now
-            </Link>
+            </a>
           </div>
         </Reveal>
       </section>
