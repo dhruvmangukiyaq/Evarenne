@@ -49,8 +49,19 @@ export const productSchema = z
     category: z.enum(CATEGORIES),
     description: z.string().min(1),
     price: moneySchema,
-    dataSource: z.literal("development-seed"),
+    dataSource: z.enum(["development-seed", "admin"]),
     images: z.array(z.object({ src: z.string().min(1), alt: z.string().min(1) })),
+    /** Video clip of the stone: an absolute http(s) URL or a stored media path. */
+    video: z
+      .string()
+      .min(1)
+      .max(2048)
+      .refine(
+        (v) => /^https?:\/\//.test(v) || v.startsWith("/api/media/"),
+        "Video must be an http(s) URL or an uploaded /api/media/ path",
+      )
+      .nullable()
+      .optional(),
     createdAt: z
       .string()
       .regex(/^\d{4}-\d{2}-\d{2}(T[\d:.]+Z)?$/, "Expected ISO date or datetime"),
@@ -111,3 +122,82 @@ export const catalogQuerySchema = z
   });
 
 export type CatalogQueryInput = z.infer<typeof catalogQuerySchema>;
+
+/* ---------------- Admin panel input schemas ---------------- */
+
+/**
+ * Grading data as submitted by the admin form. Identical to the stored
+ * `specsSchema`, except the three optional certificate fields may be omitted
+ * entirely (the form sends nothing when a stone has no lab report); the admin
+ * service normalises them to `null` before persisting.
+ */
+const adminSpecsInputSchema = specsSchema.extend({
+  lab: z.string().min(1).max(120).nullable().optional(),
+  certificateNumber: z
+    .string()
+    .regex(/^[A-Z0-9-]{6,32}$/, "Certificate numbers must be 6–32 chars of A–Z, 0–9, hyphen")
+    .nullable()
+    .optional(),
+  certificateUrl: z.string().url().nullable().optional(),
+});
+
+const adminImageInputSchema = z.object({
+  src: z
+    .string()
+    .min(1)
+    .max(2048)
+    .refine(
+      (v) => /^https?:\/\//.test(v) || v.startsWith("/api/media/"),
+      "Image must be an http(s) URL or an uploaded /api/media/ path",
+    ),
+  alt: z.string().min(1).max(300),
+});
+
+/**
+ * What the admin form submits for one diamond.
+ *
+ * Deliberately excludes everything the server owns — id, slug, sku, price,
+ * createdAt and dataSource are derived or defaulted server-side, never trusted
+ * from the client. `slug`/`sku` are accepted only as optional overrides; the
+ * admin service still checks them for collisions.
+ */
+export const adminProductInputSchema = z.object({
+  name: z.string().trim().min(1).max(160),
+  description: z.string().trim().min(1).max(4000),
+  diamondType: z.enum(DIAMOND_TYPES),
+  shape: z.enum(DIAMOND_SHAPES),
+  specs: adminSpecsInputSchema,
+  images: z.array(adminImageInputSchema).max(40).default([]),
+  video: z
+    .string()
+    .trim()
+    .min(1)
+    .max(2048)
+    .refine(
+      (v) => /^https?:\/\//.test(v) || v.startsWith("/api/media/"),
+      "Video must be an http(s) URL or an uploaded /api/media/ path",
+    )
+    .nullable()
+    .optional(),
+  featured: z.boolean().default(false),
+  /** Optional overrides; the service derives these from `name` when absent. */
+  slug: z
+    .string()
+    .trim()
+    .regex(/^[a-z0-9-]+$/, "Slug may contain lowercase letters, digits and hyphens")
+    .min(3)
+    .max(80)
+    .optional(),
+  sku: z
+    .string()
+    .trim()
+    .regex(/^[A-Z0-9-]{3,40}$/, "SKU must be 3–40 chars of A–Z, 0–9, hyphen")
+    .optional(),
+});
+
+export type AdminProductInput = z.infer<typeof adminProductInputSchema>;
+
+/** Login payload. The password itself never appears in logs or responses. */
+export const adminLoginSchema = z.object({
+  password: z.string().min(1).max(512),
+});

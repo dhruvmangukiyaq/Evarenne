@@ -2,7 +2,11 @@ import express from "express";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { catalogRouter } from "./routes/catalog.routes.js";
+import { createCatalogRouter } from "./routes/catalog.routes.js";
+import { createAdminRouter } from "./routes/admin.routes.js";
+import { FileMediaStore, FileProductStore } from "./admin/file-store.js";
+import type { MediaStore } from "./admin/media.js";
+import type { ProductStore } from "./admin/store.js";
 
 /**
  * Built client bundle (`client/dist`). Resolved from this module's own URL so
@@ -14,7 +18,25 @@ const CLIENT_DIST = fileURLToPath(new URL("../../client/dist", import.meta.url))
 const CLIENT_INDEX = path.join(CLIENT_DIST, "index.html");
 const hasClientBuild = fs.existsSync(CLIENT_INDEX);
 
-export function createApp() {
+export interface AppOptions {
+  /**
+   * Admin panel password. Defaults to `ADMIN_PASSWORD`; an empty value keeps
+   * the admin routes answering 503 rather than letting anyone sign in.
+   */
+  adminPassword?: string;
+  sessionSecret?: string;
+  /** Backing store for admin-added products; defaults to the local JSON file. */
+  store?: ProductStore;
+  /** Backing store for uploads; defaults to the local uploads directory. */
+  media?: MediaStore;
+}
+
+export function createApp(options: AppOptions = {}) {
+  const store = options.store ?? new FileProductStore();
+  const media = options.media ?? new FileMediaStore();
+  const adminPassword = options.adminPassword ?? process.env.ADMIN_PASSWORD ?? "";
+  const sessionSecret = options.sessionSecret ?? process.env.SESSION_SECRET;
+
   const app = express();
 
   app.use(express.json({ limit: "100kb" }));
@@ -26,7 +48,14 @@ export function createApp() {
     res.json({ status: "ok", service: "evarenne-api" });
   });
 
-  app.use("/api", catalogRouter);
+  // Admin + media share one adapter mounted at both prefixes; `originalUrl`
+  // always carries the full path the shared router dispatches on.
+  const adminDeps = { store, media, password: adminPassword, sessionSecret };
+  const adminRouter = createAdminRouter(adminDeps);
+  app.use("/api/admin", adminRouter);
+  app.use("/api/media", adminRouter);
+
+  app.use("/api", createCatalogRouter(store));
 
   // Unknown API route -> JSON 404 (never HTML)
   app.use("/api", (_req, res) => {
@@ -65,6 +94,11 @@ export function createApp() {
       _next: express.NextFunction,
     ) => {
       console.error(err);
+      const status = (err as { status?: number }).status;
+      if (typeof status === "number" && status >= 400 && status < 500) {
+        res.status(status).json({ error: (err as Error).message ?? "Bad request" });
+        return;
+      }
       res.status(500).json({ error: "Internal server error" });
     },
   );

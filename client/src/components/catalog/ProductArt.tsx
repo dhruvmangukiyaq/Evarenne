@@ -1,10 +1,11 @@
-import type { DiamondShape } from "../../lib/api-types";
+import type { DiamondShape, ProductImage } from "../../lib/api-types";
 import { shapeLabel } from "../../lib/labels";
 import { shapeIcon, shapePhoto } from "../../lib/shape-assets";
 
 /**
  * ProductArt — artwork used when a product has no photography in the catalog
- * data. Diamonds render the bundled sample photograph for their cut, clearly
+ * data. Diamonds with supplied photography render that photograph first;
+ * otherwise they render the bundled sample photograph for their cut, clearly
  * labelled as a shape reference in its alt text (never as a photo of that
  * specific stone). Everything else renders honest line art built from the
  * bundled shape icons — never a fake photograph.
@@ -93,9 +94,30 @@ export function ProductArt({
   product,
   className = "",
 }: {
-  product: { shape?: DiamondShape; kind: string; name: string; category: string };
+  product: {
+    shape?: DiamondShape;
+    kind: string;
+    name: string;
+    category: string;
+    images?: ProductImage[];
+  };
   className?: string;
 }) {
+  // Photography supplied through the admin panel comes first: it is a real
+  // picture of this stone, and its own alt text says so.
+  const photo = product.images?.[0];
+  if (photo) {
+    return (
+      <img
+        src={photo.src}
+        alt={photo.alt}
+        loading="lazy"
+        decoding="async"
+        className={`object-cover ${className}`}
+      />
+    );
+  }
+
   // Diamonds carry the bundled sample photograph for their cut. Its alt text
   // says plainly what the image is: a reference shot of that cut, not of this
   // specific stone.

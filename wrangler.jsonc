@@ -8,5 +8,15 @@
     "binding": "ASSETS",
     "not_found_handling": "single-page-application",
     "run_worker_first": true
-  }
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "evarenne-admin",
+      "database_id": "5fee8a8e-d9f3-4227-bfdb-1f1c91b0ee96"
+    }
+  ]
+  // R2 (photo + video uploads) is added here as an `r2_buckets` entry once the
+  // account enables R2 and the bucket exists; until then the Worker simply has
+  // no MEDIA binding and admin uploads answer 503 with a clear message.
 }

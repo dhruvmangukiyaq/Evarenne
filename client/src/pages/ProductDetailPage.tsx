@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { useApi } from "../lib/useApi";
@@ -20,6 +21,9 @@ function SpecRow({ label, value }: { label: string; value: string | null | undef
 
 export function ProductDetailPage() {
   const { slugOrId } = useParams<{ slugOrId: string }>();
+  // Declared before the early returns below: React hooks may not be
+  // conditional, and this picks which supplied photograph is on show.
+  const [activePhoto, setActivePhoto] = useState(0);
   const { data, loading, error, refetch } = useApi<{ product: Product }>((signal) => {
     void signal;
     if (!slugOrId) return Promise.reject(new Error("Missing product"));
@@ -71,6 +75,11 @@ export function ProductDetailPage() {
 
   const specs = product.specs;
 
+  // Supplied photography (admin-added listings) beats the bundled cut reference.
+  const photos = product.images ?? [];
+  const hasPhotos = photos.length > 0;
+  const photo = photos[Math.min(activePhoto, photos.length - 1)];
+
   const breadcrumbItems = [
     { label: "Home", to: "/" },
     { label: "Diamonds", to: "/diamonds/natural" },
@@ -85,13 +94,67 @@ export function ProductDetailPage() {
         {/* Gallery */}
         <Reveal delay={100} variant="fade" className="lg:sticky lg:top-28 lg:self-start">
           <div className="border border-ivory-dim bg-white">
-            <ProductArt product={product} className="aspect-square w-full" />
+            {hasPhotos && photo ? (
+              <img
+                src={photo.src}
+                alt={photo.alt}
+                className="aspect-square w-full object-cover"
+                decoding="async"
+              />
+            ) : (
+              <ProductArt product={product} className="aspect-square w-full" />
+            )}
+
+            {photos.length > 1 && (
+              <div className="flex gap-2 overflow-x-auto border-t border-ivory-dim p-2">
+                {photos.map((item, index) => (
+                  <button
+                    key={item.src}
+                    type="button"
+                    onClick={() => setActivePhoto(index)}
+                    aria-label={`Show photograph ${index + 1}`}
+                    aria-current={index === activePhoto}
+                    className={`h-16 w-16 shrink-0 overflow-hidden border transition-colors ${
+                      index === activePhoto
+                        ? "border-olive"
+                        : "border-ivory-dim hover:border-charcoal-faint"
+                    }`}
+                  >
+                    <img src={item.src} alt="" className="h-full w-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
+
           <p className="mt-2 text-center text-xs text-charcoal-faint">
-            {product.shape
-              ? "Sample image of this cut. Not a photograph of this specific stone — individual photography is added once supplied."
-              : "Illustrative artwork shown. Product photography is added once supplied."}
+            {hasPhotos
+              ? "Photographs of this specific stone."
+              : product.shape
+                ? "Sample image of this cut. Not a photograph of this specific stone — individual photography is added once supplied."
+                : "Illustrative artwork shown. Product photography is added once supplied."}
           </p>
+
+          {product.video && (
+            <div className="mt-6 border border-ivory-dim bg-white">
+              <video
+                src={product.video}
+                controls
+                preload="metadata"
+                playsInline
+                className="aspect-video w-full bg-charcoal object-contain"
+              >
+                Your browser can't play this video.{" "}
+                <a href={product.video} className="text-olive underline">
+                  Open the file directly
+                </a>
+                .
+              </video>
+              <p className="border-t border-ivory-dim p-3 text-center text-xs text-charcoal-faint">
+                Video of this specific stone, supplied with the listing.
+              </p>
+            </div>
+          )}
         </Reveal>
 
         {/* Details */}

@@ -57,8 +57,11 @@ export interface Product {
   category: Category;
   description: string;
   price: Money;
-  dataSource: "development-seed";
+  /** Seed entries carry the "Sample data" badge; admin entries do not. */
+  dataSource: "development-seed" | "admin";
   images: ProductImage[];
+  /** Optional clip of the stone itself, served from the media store. */
+  video?: string | null;
   createdAt: string;
   diamondType?: DiamondType;
   shape?: DiamondShape;
@@ -122,4 +125,40 @@ export interface ProductResponse {
 export interface ApiErrorBody {
   error: string;
   issues?: Array<{ path: string; message: string }>;
+}
+
+/* ---------------- Admin panel ---------------- */
+
+/**
+ * What the admin form submits — mirrors the server's
+ * `adminProductInputSchema`. Everything the server owns (id, slug, sku, price,
+ * createdAt, dataSource) is deliberately absent; slug and sku appear only as
+ * optional overrides the server still checks for collisions.
+ */
+export interface AdminProductInput {
+  name: string;
+  description: string;
+  diamondType: DiamondType;
+  shape: DiamondShape;
+  specs: DiamondSpecs;
+  /** Storage paths (`/api/media/…`) or absolute http(s) URLs. */
+  images: ProductImage[];
+  video?: string | null;
+  featured: boolean;
+  slug?: string;
+  sku?: string;
+}
+
+export interface AdminSession {
+  authenticated: boolean;
+  /** False when the deployment has no admin password configured. */
+  configured?: boolean;
+}
+
+export interface MediaUploadResponse {
+  key: string;
+  url: string;
+  kind: "image" | "video";
+  contentType: string;
+  size: number;
 }

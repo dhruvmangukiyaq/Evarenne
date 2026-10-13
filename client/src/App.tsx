@@ -1,5 +1,5 @@
 import { Suspense, lazy } from "react";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Layout } from "./components/layout/Layout";
 import { ToastProvider } from "./components/ui/Toast";
 import { HomePage } from "./pages/HomePage";
@@ -15,6 +15,24 @@ const EducationPage = lazy(() =>
 const StaticPage = lazy(() => import("./pages/StaticPage").then((m) => ({ default: m.StaticPage })));
 const AppointmentPage = lazy(() =>
   import("./pages/AppointmentPage").then((m) => ({ default: m.AppointmentPage })),
+);
+
+// The admin panel: lazy like the rest, and deliberately outside the public
+// `Layout` — no storefront chrome, and no route above links to these paths.
+const AdminLoginPage = lazy(() =>
+  import("./pages/admin/AdminLoginPage").then((m) => ({ default: m.AdminLoginPage })),
+);
+const AdminGuard = lazy(() =>
+  import("./pages/admin/AdminGuard").then((m) => ({ default: m.AdminGuard })),
+);
+const AdminChrome = lazy(() =>
+  import("./components/admin/AdminChrome").then((m) => ({ default: m.AdminChrome })),
+);
+const AdminProductsPage = lazy(() =>
+  import("./pages/admin/AdminProductsPage").then((m) => ({ default: m.AdminProductsPage })),
+);
+const AdminProductFormPage = lazy(() =>
+  import("./pages/admin/AdminProductFormPage").then((m) => ({ default: m.AdminProductFormPage })),
 );
 
 function PageFallback() {
@@ -35,6 +53,52 @@ export default function App() {
     <BrowserRouter>
       <ToastProvider>
         <Routes>
+          {/* Admin panel — unlinked from the site, password-gated by AdminGuard,
+              and marked noindex while it is on screen. */}
+          <Route
+            path="admin/login"
+            element={
+              <Suspense fallback={<PageFallback />}>
+                <AdminLoginPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="admin"
+            element={
+              <Suspense fallback={<PageFallback />}>
+                <AdminGuard />
+              </Suspense>
+            }
+          >
+            <Route
+              element={
+                <Suspense fallback={<PageFallback />}>
+                  <AdminChrome />
+                </Suspense>
+              }
+            >
+              <Route index element={<Navigate to="/admin/products" replace />} />
+              <Route path="products" element={
+                <Suspense fallback={<PageFallback />}>
+                  <AdminProductsPage />
+                </Suspense>
+              } />
+              <Route path="products/new" element={
+                <Suspense fallback={<PageFallback />}>
+                  <AdminProductFormPage />
+                </Suspense>
+              } />
+              <Route path="products/:id/edit" element={
+                <Suspense fallback={<PageFallback />}>
+                  <AdminProductFormPage />
+                </Suspense>
+              } />
+              {/* Anything else under /admin lands on the dashboard. */}
+              <Route path="*" element={<Navigate to="/admin/products" replace />} />
+            </Route>
+          </Route>
+
           <Route element={<Layout />}>
             <Route index element={<HomePage />} />
 

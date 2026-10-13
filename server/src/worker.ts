@@ -1,28 +1,50 @@
 import { findProduct, queryCatalog } from "./domain/catalog.js";
 import { catalogQuerySchema } from "./domain/schemas.js";
-import { SEED_GENERATED_AT, SEED_PRODUCTS } from "./data/seed.js";
+import { SEED_GENERATED_AT } from "./data/seed.js";
+import { handleAdminApi, type AdminApiDeps } from "./admin/api.js";
+import { D1ProductStore, R2MediaStore, type D1Like, type R2Like } from "./admin/d1-store.js";
+import { withSeedProducts, type ProductStore } from "./admin/store.js";
 
 /**
  * Cloudflare Worker entry point.
  *
  * The same domain logic that powers the local Express dev server
- * (`src/app.ts` + `src/routes/catalog.routes.ts`) is exposed here as a fetch
+ * (`src/app.ts` + `src/routes/*.routes.ts`) is exposed here as a fetch
  * handler so the site can run on Cloudflare Workers:
  *
+ *  - `/api/admin/*` + `/api/media/*` → the shared admin router: password
+ *    login, diamond CRUD, photo/video upload and public media serving.
  *  - `/api/*`  → catalog / product / search / home / health JSON, with the
- *                exact response shapes the client expects.
+ *                exact response shapes the client expects. The bundled seed is
+ *    merged with whatever the admin panel has stored in D1, so a
+ *    diamond saved a moment ago is immediately visible to visitors.
  *  - anything else → the built React client from `client/dist`, served via the
  *                static-assets binding (see `wrangler.jsonc`). The assets
  *                config uses a single-page-application fallback so client-side
  *                routes such as `/products/:slug` render the app shell.
  *
  * The Express server remains for local development; this Worker is the
- * production runtime on Cloudflare. Both read from the shared domain layer.
+ * production runtime on Cloudflare. Both read from the shared domain layer —
+ * including the admin API itself, which is one implementation, not two.
+ *
+ * Bindings (see `wrangler.jsonc`):
+ *   DB      → D1 database holding admin-added products
+ *   MEDIA   → R2 bucket holding uploaded photos and video (optional until R2
+ *             is enabled; admin uploads then answer 503 with a clear message)
+ *   ADMIN_PASSWORD / SESSION_SECRET → secrets, set with `wrangler secret put`
  */
 
 interface Env {
   /** Static-assets binding for the built client (`client/dist`). */
   ASSETS: { fetch(request: Request): Promise<Response> };
+  /** D1 database (`evarenne-admin`). */
+  DB?: D1Like;
+  /** R2 bucket for admin uploads. Absent until R2 is enabled on the account. */
+  MEDIA?: R2Like;
+  /** Admin panel password. Required for login; unset means admin is disabled. */
+  ADMIN_PASSWORD?: string;
+  /** Optional session signing secret; falls back to the admin password. */
+  SESSION_SECRET?: string;
 }
 
 /** Same disclosure metadata the Express API returns on every payload. */
@@ -39,9 +61,31 @@ function json(body: unknown, status = 200): Response {
   });
 }
 
+function buildDeps(env: Env): AdminApiDeps {
+  return {
+    store: env.DB ? new D1ProductStore(env.DB) : null,
+    media: env.MEDIA ? new R2MediaStore(env.MEDIA) : null,
+    password: env.ADMIN_PASSWORD ?? "",
+    sessionSecret: env.SESSION_SECRET,
+  };
+}
+
+/** The catalogue: bundled seed plus anything stored in D1. */
+async function catalogProducts(store: ProductStore | null): Promise<ReturnType<typeof withSeedProducts>> {
+  return withSeedProducts(store ? await store.list() : []);
+}
+
 /** Route an `/api/*` request to the matching handler. */
-function handleApi(request: Request, pathname: string): Response {
+async function handleApi(request: Request, pathname: string, env: Env): Promise<Response> {
+  const deps = buildDeps(env);
+
+  // Admin + media: one shared implementation, identical to Express.
+  if (pathname.startsWith("/api/admin") || pathname.startsWith("/api/media")) {
+    return handleAdminApi(request, deps);
+  }
+
   const url = new URL(request.url);
+  const products = await catalogProducts(deps.store);
 
   if (pathname === "/api/health") {
     return json({ status: "ok", service: "evarenne-api" });
@@ -63,13 +107,13 @@ function handleApi(request: Request, pathname: string): Response {
         400,
       );
     }
-    const result = queryCatalog(SEED_PRODUCTS, parsed.data);
+    const result = queryCatalog(products, parsed.data);
     return json({ ...result, ...datasetMeta });
   }
 
   if (pathname.startsWith("/api/products/")) {
     const slugOrId = decodeURIComponent(pathname.slice("/api/products/".length));
-    const product = findProduct(SEED_PRODUCTS, slugOrId);
+    const product = findProduct(products, slugOrId);
     if (!product) {
       return json({ error: "Product not found" }, 404);
     }
@@ -82,15 +126,14 @@ function handleApi(request: Request, pathname: string): Response {
     if (!q.trim()) {
       return json({ items: [], total: 0, q, ...datasetMeta });
     }
-    const result = queryCatalog(SEED_PRODUCTS, { q, pageSize: 8, sort: "relevance" });
+    const result = queryCatalog(products, { q, pageSize: 8, sort: "relevance" });
     return json({ items: result.items, total: result.total, q, ...datasetMeta });
   }
 
   if (pathname === "/api/home") {
-    const featured = SEED_PRODUCTS.filter((p) => p.featured === true);
     return json({
-      featured,
-      counts: { diamonds: SEED_PRODUCTS.filter((p) => p.kind === "diamond").length },
+      featured: products.filter((p) => p.featured === true),
+      counts: { diamonds: products.filter((p) => p.kind === "diamond").length },
       ...datasetMeta,
     });
   }
@@ -103,7 +146,7 @@ export default {
     const { pathname } = new URL(request.url);
 
     if (pathname.startsWith("/api")) {
-      return handleApi(request, pathname);
+      return handleApi(request, pathname, env);
     }
 
     // Non-API requests: serve the built client. The assets binding applies the

@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { Server } from "node:http";
 import { createApp } from "./app.js";
+import { MemoryProductStore } from "./admin/store.js";
 import type { CatalogResult } from "./domain/types.js";
 
 let server: Server;
@@ -16,7 +17,9 @@ async function getJson<T = Record<string, unknown>>(
 }
 
 beforeAll(async () => {
-  const app = createApp();
+  // An empty in-memory store keeps these assertions independent of whatever
+  // the developer has added through the admin panel locally.
+  const app = createApp({ store: new MemoryProductStore(), adminPassword: "" });
   await new Promise<void>((resolve) => {
     server = app.listen(0, () => resolve());
   });

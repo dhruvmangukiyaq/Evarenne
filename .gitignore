@@ -15,3 +15,7 @@ dist/
 *.log
 .vscode/
 .idea/
+
+# Admin panel runtime data (local Express dev): never committed
+server/data/
+server/uploads/

@@ -87,10 +87,16 @@ export interface Product {
   category: Category;
   description: string;
   price: Money;
-  /** DEV SEED marker — replaces a real inventory flag when a real catalog exists. */
-  dataSource: "development-seed";
+  /**
+   * Where the record came from: the bundled development seed, or an entry the
+   * catalogue owner added through the admin panel. The client shows its
+   * "Sample data" badge only for seed entries.
+   */
+  dataSource: "development-seed" | "admin";
   /** Photography is not yet supplied; empty means the UI renders shape art. */
   images: ProductImage[];
+  /** Optional clip of the stone itself, served from the media store. */
+  video?: string | null;
   createdAt: string;
 
   // ---- Diamond facets ----
