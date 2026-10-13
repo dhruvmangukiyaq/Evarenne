@@ -2,11 +2,11 @@
  * WhatsApp deep link behind every "Inquire Now" control.
  *
  * The showroom number lives here once, in the E.164 shape wa.me expects
- * (digits only, country code first): +91 98798 26684. Each CTA opens a chat
+ * (digits only, country code first): +49 15563 177922. Each CTA opens a chat
  * with a message already written, so an enquiry needs no form.
  */
 
-const WHATSAPP_NUMBER = "919879826684";
+const WHATSAPP_NUMBER = "4915563177922";
 
 const GREETING = "Hello Evarenne,";
 

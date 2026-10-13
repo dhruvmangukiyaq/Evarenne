@@ -9,7 +9,7 @@ import { whatsappInquiryUrl } from "./whatsapp";
 describe("whatsappInquiryUrl", () => {
   it("opens a chat with the showroom number", () => {
     expect(whatsappInquiryUrl()).toMatch(/^https:\/\/wa\.me\/\d{10,15}\?text=/);
-    expect(whatsappInquiryUrl()).toContain("919879826684");
+    expect(whatsappInquiryUrl()).toContain("4915563177922");
   });
 
   it("names the stone in the pre-written message", () => {
