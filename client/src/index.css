@@ -431,26 +431,30 @@
 /*
  * ── Motion: the hero drop ────────────────────────────────────────────────
  * The homepage stage performs one gesture: a loose round brilliant falls
- * from above the stage and seats itself in the display stand, as though
- * someone set it down from out of frame. A single keyframe track carries
- * the whole move — accelerating fall (gravity-ish ease-in), squash on
- * impact, a small rebound, settle. The stand's recoil, the ground-shadow
- * pulse and the spark burst are separate elements keyed to --hero-impact,
- * the 70% mark of the track plus the drop's delay, so the landing reads as
- * one event.
+ * from above the stage and settles in mid-air, as though someone set it
+ * down from out of frame. One keyframe track carries the fall —
+ * accelerating (gravity-ish ease-in), squash on impact, a small rebound,
+ * settle — and a second, `.hero-spin`, turns the stone a full revolution
+ * once it has come to rest. The ground-pulse and spark burst are separate
+ * elements keyed to --hero-impact, the 70% mark of the track plus the
+ * drop's delay, so the landing reads as one event.
  *
  * Distances are SVG user units (the scene is one 640×700 viewBox), so the
  * gesture scales with the stage at every breakpoint. `.hero-drop` uses
- * fill-box so its squash pivots on the stone's seat, not the scene origin.
+ * fill-box so its squash pivots on the stone's culet, not the scene origin;
+ * `.hero-spin` nests inside it and pivots on the stone's centre, so the
+ * revolution happens where the stone landed without disturbing the drop.
  *
  * prefers-reduced-motion (global override, base layer) collapses the
- * timeline to its final frame: stone seated, sparks spent, stand settled.
+ * timeline to its final frame: stone settled, sparks spent, revolution done.
  */
 @layer components {
   .hero-stage {
     --hero-drop-delay: 300ms;
     /* 300ms of stage + 70% of the 1500ms track = the moment of impact */
     --hero-impact: 1350ms;
+    /* The spin waits for the drop's track to finish before it begins. */
+    --hero-spin-delay: 1800ms;
   }
 
   .hero-drop {
@@ -459,20 +463,11 @@
     animation: heroDrop 1500ms both var(--hero-drop-delay);
   }
 
-  /* The stand is drawn in two groups (behind and in front of the stone);
-   * both share the view-box origin so they recoil as one object. */
-  .hero-stand {
-    transform-box: view-box;
-    transform-origin: 320px 622px;
-    animation:
-      fadeIn 500ms ease both 150ms,
-      heroStandRecoil 640ms var(--ease-luxury) both var(--hero-impact);
-  }
-
-  .hero-ground {
+  /* One revolution, in the plane of the page, once the stone has settled. */
+  .hero-spin {
     transform-box: fill-box;
     transform-origin: center;
-    animation: heroGroundPulse 620ms var(--ease-luxury) both var(--hero-impact);
+    animation: heroSpin 1600ms var(--ease-luxury) both var(--hero-spin-delay);
   }
 
   .hero-spark {
@@ -509,30 +504,14 @@
   }
 }
 
-@keyframes heroStandRecoil {
+/* Ends on the same frame it starts from, so the reset never flashes. */
+@keyframes heroSpin {
   0% {
-    transform: scaleY(1) scaleX(1);
-  }
-  26% {
-    transform: scaleY(0.955) scaleX(1.02);
-  }
-  55% {
-    transform: scaleY(1.012) scaleX(0.995);
+    transform: rotate(0deg);
+    animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
   }
   100% {
-    transform: scaleY(1) scaleX(1);
-  }
-}
-
-@keyframes heroGroundPulse {
-  0% {
-    transform: scale(1);
-  }
-  30% {
-    transform: scale(1.22, 1.12);
-  }
-  100% {
-    transform: scale(1);
+    transform: rotate(360deg);
   }
 }
 
